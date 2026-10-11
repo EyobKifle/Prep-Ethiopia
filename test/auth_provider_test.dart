@@ -3,10 +3,10 @@ import 'package:mocktail/mocktail.dart';
 import 'package:isar_community/isar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
-import 'package:lumo/features/auth/auth_provider.dart';
-import 'package:lumo/core/network/remote_api_service.dart';
-import 'package:lumo/core/network/api_models.dart' as api;
-import 'package:lumo/core/database/isar_models.dart';
+import 'package:prep_ethiopia/features/auth/auth_provider.dart';
+import 'package:prep_ethiopia/core/network/remote_api_service.dart';
+import 'package:prep_ethiopia/core/network/api_models.dart' as api;
+import 'package:prep_ethiopia/core/database/isar_models.dart';
 
 class MockRemoteApiService extends Mock implements RemoteApiService {}
 class MockIsar extends Mock implements Isar {}

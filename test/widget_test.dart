@@ -6,15 +6,15 @@ import 'package:mocktail/mocktail.dart';
 import 'package:isar_community/isar.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:lumo/main.dart';
-import 'package:lumo/features/auth/auth_provider.dart';
-import 'package:lumo/core/database/isar_provider.dart';
-import 'package:lumo/core/router/app_router.dart';
-import 'package:lumo/core/theme/app_theme.dart';
-import 'package:lumo/core/localization/app_localizations.dart';
-import 'package:lumo/features/sync/sync_service.dart';
-import 'package:lumo/core/network/connectivity_service.dart';
-import 'package:lumo/core/network/remote_api_service.dart';
+import 'package:prep_ethiopia/main.dart';
+import 'package:prep_ethiopia/features/auth/auth_provider.dart';
+import 'package:prep_ethiopia/core/database/isar_provider.dart';
+import 'package:prep_ethiopia/core/router/app_router.dart';
+import 'package:prep_ethiopia/core/theme/app_theme.dart';
+import 'package:prep_ethiopia/core/localization/app_localizations.dart';
+import 'package:prep_ethiopia/features/sync/sync_service.dart';
+import 'package:prep_ethiopia/core/network/connectivity_service.dart';
+import 'package:prep_ethiopia/core/network/remote_api_service.dart';
 
 class MockIsar extends Mock implements Isar {}
 
