@@ -45,7 +45,7 @@ class LocaleNotifier extends StateNotifier<String> {
 class AppTranslations {
   static const Map<String, Map<String, String>> _localizedValues = {
     'en': {
-      'appName': 'Lumo',
+      'appName': 'Prep Ethiopia',
       'welcome': 'Hello',
       'welcomeSubtitle': 'Ready to learn today?',
       'continueLearning': 'Continue Learning',

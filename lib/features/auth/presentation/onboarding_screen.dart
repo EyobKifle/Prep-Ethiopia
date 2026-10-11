@@ -265,14 +265,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Spacer(),
-          Image.asset(
-            'assets/logo.png',
-            height: 120,
-            fit: BoxFit.contain,
-          ),
           const SizedBox(height: 24),
           Text(
-            'Lumo',
+            'Prep Ethiopia',
             style: AppTheme.getHeadingStyle(context: context, fontSize: 32),
             textAlign: TextAlign.center,
           ),

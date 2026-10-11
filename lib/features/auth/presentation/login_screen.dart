@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/localization/app_localizations.dart';
 import '../auth_provider.dart';
@@ -112,14 +111,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SvgPicture.asset(
-                    'assets/logo.svg',
-                    height: 80,
-                    semanticsLabel: 'Lumo Logo',
-                  ),
                   const SizedBox(height: 24),
                   Text(
-                    'Lumo',
+                    'Prep Ethiopia',
                     style: theme.textTheme.displaySmall?.copyWith(
                       color: theme.primaryColor,
                       fontWeight: FontWeight.bold,
@@ -215,7 +209,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: TextButton.styleFrom(
                       foregroundColor: theme.primaryColor,
                     ),
-                    child: const Text('New to Lumo? Get Started'),
+                    child: const Text('New to Prep Ethiopia? Get Started'),
                   ),
                 ],
               ),
