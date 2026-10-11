@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Interactive Flashcard Step | EduSync Ethiopia</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#e4e2e4",
+                        "on-surface": "#1b1b1d",
+                        "primary-container": "#131b2e",
+                        "surface": "#fcf8fa",
+                        "on-primary-container": "#7c839b",
+                        "primary": "#000000",
+                        "primary-fixed": "#dae2fd",
+                        "surface-tint": "#565e74",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed-dim": "#dec29a",
+                        "on-tertiary-container": "#98805d",
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "background": "#fcf8fa",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#f3f0f2",
+                        "surface-dim": "#dcd9db",
+                        "outline-variant": "#c6c6cd",
+                        "on-background": "#1b1b1d",
+                        "on-surface-variant": "#45464d",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "surface-container": "#f0edef",
+                        "tertiary-container": "#271901",
+                        "on-tertiary-fixed": "#271901",
+                        "surface-variant": "#e4e2e4",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "outline": "#76777d",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#bec6e0",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "surface-container-high": "#eae7e9",
+                        "tertiary": "#000000",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "secondary": "#515f74",
+                        "on-secondary-container": "#57657a",
+                        "surface-bright": "#fcf8fa",
+                        "surface-container-low": "#f6f3f5",
+                        "on-primary-fixed": "#131b2e",
+                        "secondary-fixed": "#d5e3fc",
+                        "inverse-surface": "#303032",
+                        "on-tertiary-fixed-variant": "#574425",
+                        "secondary-container": "#d5e3fc",
+                        "primary-fixed-dim": "#bec6e0",
+                        "tertiary-fixed": "#fcdeb5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "margin-desktop": "32px",
+                        "container-max": "1200px",
+                        "margin-mobile": "16px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Outfit"],
+                        "label-caps": ["Inter"],
+                        "body-md": ["Inter"],
+                        "amharic-body": ["Noto Sans Ethiopic"],
+                        "headline-lg": ["Outfit"],
+                        "headline-md": ["Outfit"],
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "30px", "fontWeight": "700"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "amharic-body": ["16px", {"lineHeight": "26px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .preserve-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        .flashcard-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .is-flipped {
+            transform: rotateY(180deg);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .no-select {
+            user-select: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md m-0 p-0 overflow-x-hidden">
+<!-- Top AppBar (from JSON blueprint) -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-16 bg-surface border-b border-outline">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary font-headline-md">signal_cellular_alt</span>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">EduSync Ethiopia</h1>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-body-sm text-body-sm text-primary font-bold">12 Pending</span>
+<button class="material-symbols-outlined hover:bg-surface-container-high rounded-full p-2 transition-colors duration-200">close</button>
+</div>
+</header>
+<!-- Sidebar Navigation (Desktop only) -->
+<aside class="hidden md:flex flex-col h-screen fixed left-0 top-0 py-8 px-4 w-72 bg-surface border-r border-outline pt-20">
+<div class="flex items-center gap-3 mb-8 px-2">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold">AB</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-primary">Abebe Bikila</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Grade 10 Student</span>
+</div>
+</div>
+<nav class="space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps text-label-caps uppercase">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-primary bg-primary font-bold border-l-4 border-primary transition-all" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label-caps text-label-caps uppercase">Subjects</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">fitness_center</span>
+<span class="font-label-caps text-label-caps uppercase">Exercises</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">cloud_off</span>
+<span class="font-label-caps text-label-caps uppercase">Offline Library</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps uppercase">Settings</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="pt-20 pb-24 md:pl-72 min-h-screen flex flex-col items-center">
+<!-- Progress Indicator -->
+<div class="w-full max-w-xl px-gutter mt-8">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Card 5 of 20</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">25% Complete</span>
+</div>
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-1/4"></div>
+</div>
+</div>
+<!-- Flashcard Container -->
+<div class="flex-grow flex flex-col items-center justify-center w-full px-gutter perspective-1000 my-12">
+<div class="relative w-full max-w-md aspect-[4/5] flashcard-inner preserve-3d cursor-pointer no-select group" id="flashcard" onclick="this.classList.toggle('is-flipped')">
+<!-- Front Face -->
+<div class="absolute inset-0 backface-hidden bg-surface border border-primary flex flex-col items-center justify-center p-12 text-center group-hover:bg-surface-container transition-colors duration-300">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase mb-4 tracking-widest">Biology - Unit 2</span>
+<h2 class="font-headline-lg text-headline-lg md:text-headline-lg text-primary mb-8">Mitochondria</h2>
+<div class="w-24 h-24 mb-8">
+<img class="w-full h-full object-contain opacity-80" data-alt="A scientific diagram of a mitochondrion organelle in a minimalist line art style, using only black and white with high contrast. The image is clean and clinical, showing the inner and outer membranes clearly without any complex shading, fitting a premium educational app design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvrlUbMLa4USuRfFSHO9pzrx0QPaHsLzz3yte4APogOvRKSSJauJvC8_FUMC1Bt5Gp0m0Q1bQgwzADDx62HSCqt7npXqwAOL2OvEEeh5TikG1U73Ji0l9Pkq5tfQxjYBZVVORFTwi_qk5b7gaURiOuB49oQ66WVh6z26N9oP8LKz5t2AvV8oDo5gk313vcvlBAE03j8-SMUZ2FQ9V65czmtH3eqMUvqBHDMGQziJSm_ugkXe3MFx-1l2dfzLsfi47pB11lwMezmjk"/>
+</div>
+<div class="mt-auto flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">touch_app</span>
+<span class="font-label-caps text-label-caps">TAP TO FLIP</span>
+</div>
+</div>
+<!-- Back Face -->
+<div class="absolute inset-0 backface-hidden bg-primary border border-primary rotate-y-180 flex flex-col items-center justify-center p-12 text-center text-on-primary">
+<span class="font-label-caps text-label-caps text-on-primary-container uppercase mb-6 tracking-widest">Definition</span>
+<p class="font-body-lg text-body-lg leading-relaxed mb-6">
+                        An organelle found in large numbers in most cells, in which the biochemical processes of <span class="font-bold underline decoration-2 underline-offset-4">respiration</span> and energy production occur.
+                    </p>
+<div class="px-4 py-2 bg-white/10 rounded-lg">
+<p class="font-body-sm text-body-sm italic">"The powerhouse of the cell."</p>
+</div>
+<div class="mt-auto flex items-center gap-2 text-on-primary-container">
+<span class="material-symbols-outlined text-sm">touch_app</span>
+<span class="font-label-caps text-label-caps">TAP TO RETURN</span>
+</div>
+</div>
+</div>
+<!-- SM-2 Rating Buttons -->
+<div class="w-full max-w-md grid grid-cols-3 gap-4 mt-8 opacity-0 translate-y-4 transition-all duration-500 delay-150" id="rating-controls">
+<button class="flex flex-col items-center justify-center py-4 border border-outline hover:border-primary hover:bg-surface-container-high transition-all active:scale-95 group">
+<span class="font-label-caps text-label-caps text-on-surface-variant group-hover:text-primary uppercase mb-1">Hard</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary">1d</span>
+</button>
+<button class="flex flex-col items-center justify-center py-4 border border-outline hover:border-primary hover:bg-surface-container-high transition-all active:scale-95 group">
+<span class="font-label-caps text-label-caps text-on-surface-variant group-hover:text-primary uppercase mb-1">Good</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary">4d</span>
+</button>
+<button class="flex flex-col items-center justify-center py-4 border border-outline hover:border-primary hover:bg-surface-container-high transition-all active:scale-95 group">
+<span class="font-label-caps text-label-caps text-on-surface-variant group-hover:text-primary uppercase mb-1">Easy</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary">7d</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation (Mobile only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 py-3 bg-surface border-t border-outline md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-label-caps uppercase">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary text-on-primary rounded-xl px-4 py-1 scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-label-caps text-label-caps uppercase">Exercises</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined">sync</span>
+<span class="font-label-caps text-label-caps uppercase">Sync</span>
+</a>
+</nav>
+<script>
+        // Simple logic to show rating buttons once user interacts
+        const card = document.getElementById('flashcard');
+        const controls = document.getElementById('rating-controls');
+        
+        card.addEventListener('click', () => {
+            controls.style.opacity = '1';
+            controls.style.transform = 'translateY(0)';
+        });
+
+        // Mimic card rating interaction
+        const buttons = controls.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Don't flip card when pressing rating
+                btn.classList.add('bg-primary', 'text-on-primary');
+                setTimeout(() => {
+                    // Logic for next card could go here
+                    alert('Response recorded. Loading next card...');
+                    btn.classList.remove('bg-primary', 'text-on-primary');
+                }, 300);
+            });
+        });
+    </script>
+</body></html>

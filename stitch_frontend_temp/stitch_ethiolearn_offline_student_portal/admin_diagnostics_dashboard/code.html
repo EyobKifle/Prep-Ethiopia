@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EduSync Ethiopia - System Diagnostics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@600;700&family=Noto+Sans+Ethiopic:wght@400&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        /* Custom scrollbar for data-dense areas */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .diag-row:hover {
+            background-color: #f8fafc;
+        }
+        .toggle-checkbox:checked + .toggle-slot {
+            background-color: #0F172A;
+        }
+        .toggle-checkbox:checked + .toggle-slot .toggle-dot {
+            transform: translateX(100%);
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#e4e2e4",
+                    "on-surface": "#1b1b1d",
+                    "primary-container": "#131b2e",
+                    "surface": "#fcf8fa",
+                    "on-primary-container": "#7c839b",
+                    "primary": "#000000",
+                    "primary-fixed": "#dae2fd",
+                    "surface-tint": "#565e74",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed-dim": "#dec29a",
+                    "on-tertiary-container": "#98805d",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "background": "#fcf8fa",
+                    "error-container": "#ffdad6",
+                    "inverse-on-surface": "#f3f0f2",
+                    "surface-dim": "#dcd9db",
+                    "outline-variant": "#c6c6cd",
+                    "on-background": "#1b1b1d",
+                    "on-surface-variant": "#45464d",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#3a485b",
+                    "surface-container": "#f0edef",
+                    "tertiary-container": "#271901",
+                    "on-tertiary-fixed": "#271901",
+                    "surface-variant": "#e4e2e4",
+                    "secondary-fixed-dim": "#b9c7df",
+                    "outline": "#76777d",
+                    "on-primary": "#ffffff",
+                    "inverse-primary": "#bec6e0",
+                    "on-primary-fixed-variant": "#3f465c",
+                    "surface-container-high": "#eae7e9",
+                    "tertiary": "#000000",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed": "#0d1c2e",
+                    "secondary": "#515f74",
+                    "on-secondary-container": "#57657a",
+                    "surface-bright": "#fcf8fa",
+                    "surface-container-low": "#f6f3f5",
+                    "on-primary-fixed": "#131b2e",
+                    "secondary-fixed": "#d5e3fc",
+                    "inverse-surface": "#303032",
+                    "on-tertiary-fixed-variant": "#574425",
+                    "secondary-container": "#d5e3fc",
+                    "primary-fixed-dim": "#bec6e0",
+                    "tertiary-fixed": "#fcdeb5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "gutter": "16px",
+                    "margin-desktop": "32px",
+                    "container-max": "1200px",
+                    "margin-mobile": "16px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Outfit"],
+                    "label-caps": ["Inter"],
+                    "body-md": ["Inter"],
+                    "amharic-body": ["Noto Sans Ethiopic"],
+                    "headline-lg": ["Outfit"],
+                    "headline-md": ["Outfit"],
+                    "body-lg": ["Inter"],
+                    "body-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "30px", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "amharic-body": ["16px", {"lineHeight": "26px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface font-body-md">
+<!-- TopAppBar (Mobile Only) -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-16 bg-surface border-b border-outline md:hidden">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">signal_cellular_alt</span>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">EduSync Ethiopia</h1>
+</div>
+<div class="text-primary font-body-sm bg-surface-container-high px-2 py-1 rounded">
+            12 Pending
+        </div>
+</header>
+<!-- NavigationDrawer (Desktop Only) -->
+<aside class="hidden md:flex flex-col h-screen fixed left-0 top-0 py-8 px-4 w-72 bg-surface border-r border-outline z-50">
+<div class="mb-8 px-4">
+<h2 class="font-headline-md text-headline-md font-bold text-primary">EduSync Ethiopia</h2>
+</div>
+<div class="flex items-center gap-4 px-4 mb-10 pb-6 border-b border-outline-variant">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-fixed">person</span>
+</div>
+<div>
+<p class="font-body-md font-bold text-on-surface">Abebe Bikila</p>
+<p class="font-body-sm text-on-surface-variant">Grade 10 Student</p>
+<p class="text-[10px] text-outline font-label-caps mt-1">REGION: OROMIA</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary bg-primary font-bold border-l-4 border-primary transition-all duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps">DASHBOARD</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-150" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label-caps">SUBJECTS</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-150" href="#">
+<span class="material-symbols-outlined">fitness_center</span>
+<span class="font-label-caps">EXERCISES</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-150" href="#">
+<span class="material-symbols-outlined">cloud_off</span>
+<span class="font-label-caps">OFFLINE LIBRARY</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps">SETTINGS</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content -->
+<main class="md:ml-72 min-h-screen pt-20 md:pt-8 pb-24 md:pb-8 px-gutter md:px-margin-desktop">
+<div class="max-w-container-max mx-auto">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+<div>
+<span class="font-label-caps text-outline uppercase tracking-widest text-[10px]">Administrative Module</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">System Diagnostics</h2>
+</div>
+<div class="flex gap-2">
+<button class="bg-primary text-white font-label-caps px-4 py-2 flex items-center gap-2 border border-primary hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[18px]">download</span> EXPORT LOGS
+                    </button>
+<button class="bg-surface border border-outline text-on-surface font-label-caps px-4 py-2 flex items-center gap-2 hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">refresh</span> RELOAD
+                    </button>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Filters & Controls -->
+<section class="lg:col-span-12">
+<div class="bg-surface border border-outline p-4 flex flex-wrap items-center gap-6">
+<div class="flex flex-col gap-1 min-w-[140px]">
+<label class="font-label-caps text-on-surface-variant text-[10px]">LOG LEVEL</label>
+<select class="bg-white border border-outline px-3 py-1.5 font-body-sm focus:border-primary focus:ring-0 outline-none">
+<option>All Levels</option>
+<option>Info</option>
+<option>Warning</option>
+<option>Error</option>
+<option>Critical</option>
+</select>
+</div>
+<div class="flex flex-col gap-1 min-w-[140px]">
+<label class="font-label-caps text-on-surface-variant text-[10px]">FEATURE MODULE</label>
+<select class="bg-white border border-outline px-3 py-1.5 font-body-sm focus:border-primary focus:ring-0 outline-none">
+<option>All Features</option>
+<option>Auth Service</option>
+<option>Sync Engine</option>
+<option>DB Coordinator</option>
+<option>Media CDN</option>
+</select>
+</div>
+<div class="flex flex-col gap-1 flex-1 min-w-[200px]">
+<label class="font-label-caps text-on-surface-variant text-[10px]">SEARCH MESSAGE</label>
+<div class="relative">
+<input class="w-full bg-white border border-outline pl-9 pr-3 py-1.5 font-body-sm focus:border-primary focus:ring-0 outline-none" placeholder="Search by message content..." type="text"/>
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+</div>
+</div>
+<div class="flex items-end self-stretch pt-5">
+<button class="font-label-caps text-primary hover:underline text-[12px]">Clear All Filters</button>
+</div>
+</div>
+</section>
+<!-- Diagnostics Table -->
+<section class="lg:col-span-8 space-y-4">
+<div class="border border-outline bg-surface-container-lowest overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[600px]">
+<thead>
+<tr class="border-b border-outline bg-surface-container">
+<th class="px-4 py-3 font-label-caps text-[11px] text-on-surface-variant">TIMESTAMP</th>
+<th class="px-4 py-3 font-label-caps text-[11px] text-on-surface-variant">LEVEL</th>
+<th class="px-4 py-3 font-label-caps text-[11px] text-on-surface-variant">MODULE</th>
+<th class="px-4 py-3 font-label-caps text-[11px] text-on-surface-variant">MESSAGE</th>
+<th class="px-4 py-3 font-label-caps text-[11px] text-on-surface-variant text-right">ACTION</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="diag-row transition-colors">
+<td class="px-4 py-3 font-body-sm text-outline tabular-nums">2023-11-20 14:22:01</td>
+<td class="px-4 py-3">
+<span class="text-error font-bold font-label-caps flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> ERROR
+                                        </span>
+</td>
+<td class="px-4 py-3 font-body-sm">DB Coordinator</td>
+<td class="px-4 py-3 font-body-sm truncate max-w-[200px]">Failed to resolve primary node connection timeout...</td>
+<td class="px-4 py-3 text-right">
+<button class="text-primary material-symbols-outlined">open_in_new</button>
+</td>
+</tr>
+<tr class="diag-row transition-colors">
+<td class="px-4 py-3 font-body-sm text-outline tabular-nums">2023-11-20 14:18:45</td>
+<td class="px-4 py-3">
+<span class="text-orange-600 font-bold font-label-caps flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-orange-600"></span> WARNING
+                                        </span>
+</td>
+<td class="px-4 py-3 font-body-sm">Sync Engine</td>
+<td class="px-4 py-3 font-body-sm truncate max-w-[200px]">Sync lag detected in Region: Oromia (450ms)</td>
+<td class="px-4 py-3 text-right">
+<button class="text-primary material-symbols-outlined">open_in_new</button>
+</td>
+</tr>
+<tr class="diag-row transition-colors">
+<td class="px-4 py-3 font-body-sm text-outline tabular-nums">2023-11-20 14:15:20</td>
+<td class="px-4 py-3">
+<span class="text-on-secondary-container font-bold font-label-caps flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> INFO
+                                        </span>
+</td>
+<td class="px-4 py-3 font-body-sm">Auth Service</td>
+<td class="px-4 py-3 font-body-sm truncate max-w-[200px]">New student profile created: ID-9982</td>
+<td class="px-4 py-3 text-right">
+<button class="text-primary material-symbols-outlined">open_in_new</button>
+</td>
+</tr>
+<tr class="diag-row transition-colors">
+<td class="px-4 py-3 font-body-sm text-outline tabular-nums">2023-11-20 14:12:11</td>
+<td class="px-4 py-3">
+<span class="text-error font-bold font-label-caps flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> ERROR
+                                        </span>
+</td>
+<td class="px-4 py-3 font-body-sm">Media CDN</td>
+<td class="px-4 py-3 font-body-sm truncate max-w-[200px]">Asset 'intro_video.mp4' not found on edge node 04</td>
+<td class="px-4 py-3 text-right">
+<button class="text-primary material-symbols-outlined">open_in_new</button>
+</td>
+</tr>
+<tr class="diag-row transition-colors">
+<td class="px-4 py-3 font-body-sm text-outline tabular-nums">2023-11-20 14:10:05</td>
+<td class="px-4 py-3">
+<span class="text-on-secondary-container font-bold font-label-caps flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> INFO
+                                        </span>
+</td>
+<td class="px-4 py-3 font-body-sm">Sync Engine</td>
+<td class="px-4 py-3 font-body-sm truncate max-w-[200px]">Sync sequence #4421 completed successfully</td>
+<td class="px-4 py-3 text-right">
+<button class="text-primary material-symbols-outlined">open_in_new</button>
+</td>
+</tr>
+<tr class="diag-row transition-colors">
+<td class="px-4 py-3 font-body-sm text-outline tabular-nums">2023-11-20 14:05:32</td>
+<td class="px-4 py-3">
+<span class="text-orange-600 font-bold font-label-caps flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-orange-600"></span> WARNING
+                                        </span>
+</td>
+<td class="px-4 py-3 font-body-sm">DB Coordinator</td>
+<td class="px-4 py-3 font-body-sm truncate max-w-[200px]">High memory consumption (84%) on DB-Server-Alpha</td>
+<td class="px-4 py-3 text-right">
+<button class="text-primary material-symbols-outlined">open_in_new</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex items-center justify-between font-label-caps text-on-surface-variant text-[11px]">
+<span>Showing 6 of 1,244 entries</span>
+<div class="flex gap-1">
+<button class="w-8 h-8 flex items-center justify-center border border-outline hover:bg-surface-container">1</button>
+<button class="w-8 h-8 flex items-center justify-center border border-outline hover:bg-surface-container">2</button>
+<button class="w-8 h-8 flex items-center justify-center border border-outline hover:bg-surface-container">3</button>
+<button class="w-8 h-8 flex items-center justify-center border border-outline hover:bg-surface-container">...</button>
+</div>
+</div>
+</section>
+<!-- Sidebar Toggles (Feature Flags) -->
+<section class="lg:col-span-4 space-y-6">
+<div class="bg-surface border border-outline p-6">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline-md text-headline-md font-bold">Feature Flags</h3>
+<span class="material-symbols-outlined text-primary">toggle_on</span>
+</div>
+<div class="space-y-6">
+<!-- Switch 1 -->
+<div class="flex items-center justify-between">
+<div>
+<p class="font-body-md font-bold text-on-surface">Offline Mode</p>
+<p class="font-body-sm text-outline">Enable local caching for sync</p>
+</div>
+<label class="relative inline-block w-12 h-6 cursor-pointer">
+<input checked="" class="sr-only toggle-checkbox" type="checkbox"/>
+<div class="toggle-slot absolute inset-0 bg-outline-variant rounded-full transition-colors duration-200">
+<div class="toggle-dot absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 shadow-sm"></div>
+</div>
+</label>
+</div>
+<!-- Switch 2 -->
+<div class="flex items-center justify-between">
+<div>
+<p class="font-body-md font-bold text-on-surface">Beta Exams</p>
+<p class="font-body-sm text-outline">Show experimental assessments</p>
+</div>
+<label class="relative inline-block w-12 h-6 cursor-pointer">
+<input class="sr-only toggle-checkbox" type="checkbox"/>
+<div class="toggle-slot absolute inset-0 bg-outline-variant rounded-full transition-colors duration-200">
+<div class="toggle-dot absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 shadow-sm"></div>
+</div>
+</label>
+</div>
+<!-- Switch 3 -->
+<div class="flex items-center justify-between">
+<div>
+<p class="font-body-md font-bold text-on-surface">Amharic UI</p>
+<p class="font-body-sm text-outline">Activate system-wide translation</p>
+</div>
+<label class="relative inline-block w-12 h-6 cursor-pointer">
+<input checked="" class="sr-only toggle-checkbox" type="checkbox"/>
+<div class="toggle-slot absolute inset-0 bg-outline-variant rounded-full transition-colors duration-200">
+<div class="toggle-dot absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 shadow-sm"></div>
+</div>
+</label>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant">
+<button class="w-full bg-white border-2 border-primary text-primary font-label-caps py-2 hover:bg-primary hover:text-white transition-all">
+                                APPLY CONFIGURATION
+                            </button>
+</div>
+</div>
+<!-- Status Summary Card -->
+<div class="bg-primary-container p-6 text-on-primary-container border border-primary">
+<h3 class="font-label-caps text-white mb-4">SYSTEM HEALTH OVERVIEW</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="font-body-sm">Uptime</span>
+<span class="font-body-sm font-bold text-white">99.98%</span>
+</div>
+<div class="w-full bg-on-primary-container/20 h-1">
+<div class="bg-white h-full w-[99.98%]"></div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-body-sm">Active Users</span>
+<span class="font-body-sm font-bold text-white">42,890</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-body-sm">Critical Errors (24h)</span>
+<span class="font-body-sm font-bold text-error-container">0</span>
+</div>
+</div>
+</div>
+<!-- Atmospheric Image -->
+<div class="relative overflow-hidden group">
+<div class="w-full h-48 bg-cover bg-center grayscale group-hover:grayscale-0 transition-all duration-500" data-alt="A macro photograph of high-tech server racks with flickering indicator lights in a pristine, dark data center. The aesthetic is professional and clinical, reflecting a modern light-mode design with deep black accents and crisp white highlights. Soft cool-toned lighting highlights the precision and reliability of the hardware components." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBjM8AEuYSxxBoURapa7BtNNvVjP7yzbDR0quhDLaC8N3HEubBEu5gSAiBooFF-8LUi7qjDxAzJK-TBBxe58c4_12jc4JNKMFlcHBtzrZ6uayEbXEwYQhvzfwdcCVdKlLB77XrBYDLLCdWsiAPzaPDmWJ-Iqe4G4NRH54wzJzeLViEukO-O2fOnMXa0LdYcSRvX1Rli2SjtIuFvFPKCeeGsC_k_ydHD7bfOAukuu_XbqiGqAVIZ2wwEvWV42FjmAtfp3MYklhwte3g')"></div>
+<div class="absolute inset-0 bg-primary/20 group-hover:bg-transparent transition-all"></div>
+<div class="absolute bottom-4 left-4">
+<p class="font-label-caps text-white bg-primary px-2 py-0.5 text-[10px]">INFRASTRUCTURE STATUS: STABLE</p>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 py-3 bg-surface border-t border-outline md:hidden">
+<a class="flex flex-col items-center justify-center bg-primary text-on-primary rounded-xl px-4 py-1 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-caps text-[10px]">HOME</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-label-caps text-[10px]">EXERCISES</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">sync</span>
+<span class="font-label-caps text-[10px]">SYNC</span>
+</a>
+</nav>
+<script>
+        // Simple interactivity for the switches and simulation of real-time log updates
+        const switches = document.querySelectorAll('.toggle-checkbox');
+        switches.forEach(sw => {
+            sw.addEventListener('change', (e) => {
+                const label = e.target.closest('div.flex').querySelector('p.font-body-md').innerText;
+                console.log(`Feature ${label} toggled to: ${e.target.checked}`);
+            });
+        });
+
+        // Background simulation logic
+        setInterval(() => {
+            const rows = document.querySelectorAll('.diag-row');
+            if (rows.length > 0) {
+                const randomRow = rows[Math.floor(Math.random() * rows.length)];
+                randomRow.classList.add('bg-primary-fixed/30');
+                setTimeout(() => randomRow.classList.remove('bg-primary-fixed/30'), 500);
+            }
+        }, 3000);
+    </script>
+</body></html>
