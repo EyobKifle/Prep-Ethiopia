@@ -77,7 +77,7 @@ class _LessonEditorScreenState extends ConsumerState<LessonEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_isLoading) return const Scaffold(body: Center(child: const CircularProgressIndicator()));
     if (_lesson == null) return const Scaffold(body: Center(child: Text('Lesson not found')));
 
     return Scaffold(

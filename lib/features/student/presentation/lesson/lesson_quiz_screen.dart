@@ -95,7 +95,7 @@ class _LessonQuizScreenState extends ConsumerState<LessonQuizScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_isLoading) return const Scaffold(body: Center(child: const CircularProgressIndicator()));
     if (_questions.isEmpty) {
       return Scaffold(
         appBar: AppBar(),

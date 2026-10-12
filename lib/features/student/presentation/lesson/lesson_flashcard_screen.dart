@@ -122,7 +122,7 @@ class _LessonFlashcardScreenState extends ConsumerState<LessonFlashcardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_isLoading) return const Scaffold(body: Center(child: const CircularProgressIndicator()));
     if (_templates.isEmpty) {
       return Scaffold(
         appBar: AppBar(),

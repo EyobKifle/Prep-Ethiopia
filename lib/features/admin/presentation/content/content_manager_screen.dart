@@ -73,7 +73,7 @@ class _ContentManagerScreenState extends ConsumerState<ContentManagerScreen> {
   @override
   Widget build(BuildContext context) {
     final syncState = ref.watch(syncProvider);
-    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_isLoading) return const Scaffold(body: Center(child: const CircularProgressIndicator()));
 
     return Scaffold(
       appBar: AppBar(

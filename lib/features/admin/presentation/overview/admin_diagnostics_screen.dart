@@ -41,7 +41,7 @@ class _AdminDiagnosticsScreenState extends ConsumerState<AdminDiagnosticsScreen>
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_isLoading) return const Scaffold(body: Center(child: const CircularProgressIndicator()));
 
     return DefaultTabController(
       length: 2,

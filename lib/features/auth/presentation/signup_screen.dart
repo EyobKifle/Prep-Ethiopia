@@ -298,7 +298,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: const CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Text('Sign Up', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),

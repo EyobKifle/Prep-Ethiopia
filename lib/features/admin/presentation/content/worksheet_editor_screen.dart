@@ -134,7 +134,7 @@ class _WorksheetEditorScreenState extends ConsumerState<WorksheetEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_isLoading) return const Scaffold(body: Center(child: const CircularProgressIndicator()));
     if (_worksheet == null) return const Scaffold(body: Center(child: Text('Worksheet not found')));
 
     return Scaffold(

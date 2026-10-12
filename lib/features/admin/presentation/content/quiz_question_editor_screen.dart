@@ -77,7 +77,7 @@ class _QuizQuestionEditorScreenState extends ConsumerState<QuizQuestionEditorScr
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_isLoading) return const Scaffold(body: Center(child: const CircularProgressIndicator()));
     if (_step == null) return const Scaffold(body: Center(child: Text('Step not found')));
 
     return Scaffold(

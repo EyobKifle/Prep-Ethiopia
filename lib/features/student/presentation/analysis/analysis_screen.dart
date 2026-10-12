@@ -79,7 +79,7 @@ class _AnalysisScreenState extends ConsumerState<AnalysisScreen> {
     // final isDark = theme.brightness == Brightness.dark;
 
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(body: Center(child: const CircularProgressIndicator()));
     }
 
     return Scaffold(

@@ -304,7 +304,7 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
 
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: const CircularProgressIndicator()),
       );
     }
 
