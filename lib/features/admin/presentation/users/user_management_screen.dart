@@ -68,7 +68,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: const CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : ListView.separated(
               itemCount: filteredUsers.length,
               separatorBuilder: (context, index) => const Divider(height: 1),

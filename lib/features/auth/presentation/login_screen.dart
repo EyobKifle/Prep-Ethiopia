@@ -192,7 +192,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: const CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Text('Sign In', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),

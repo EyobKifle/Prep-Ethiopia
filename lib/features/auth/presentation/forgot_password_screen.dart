@@ -138,7 +138,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         ? const SizedBox(
                             height: 20,
                             width: 20,
-                            child: const CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Text(context.tr('sendResetLink'), style: const TextStyle(fontWeight: FontWeight.bold)),
                   ),
