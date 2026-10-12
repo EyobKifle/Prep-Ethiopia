@@ -53,7 +53,7 @@ class _WorksheetListScreenState extends ConsumerState<WorksheetListScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(body: Center(child: const CircularProgressIndicator()));
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (_units.isEmpty) {
