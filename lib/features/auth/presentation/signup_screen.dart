@@ -249,7 +249,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         child: Text.rich(
                           TextSpan(
                             children: [
-                              TextSpan(text: 'I agree to the '),
+                             const TextSpan(text: 'I agree to the '),
                               WidgetSpan(
                                 alignment: PlaceholderAlignment.middle,
                                 child: TextButton(
