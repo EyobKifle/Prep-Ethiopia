@@ -106,7 +106,7 @@ class _WorksheetExerciseScreenState extends ConsumerState<WorksheetExerciseScree
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Scaffold(body: Center(child: const CircularProgressIndicator()));
+    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
     if (_questions.isEmpty) {
       return Scaffold(
         appBar: AppBar(),

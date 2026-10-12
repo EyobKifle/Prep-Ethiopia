@@ -187,7 +187,7 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> with 
 
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: const CircularProgressIndicator()),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
