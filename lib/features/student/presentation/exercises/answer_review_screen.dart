@@ -82,7 +82,7 @@ class _AnswerReviewScreenState extends ConsumerState<AnswerReviewScreen> {
           ),
         ),
         body: _isLoading
-            ? const Center(child: const CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator())
             : TabBarView(
                 children: [
                   _buildAttemptsList(
