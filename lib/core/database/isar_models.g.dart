@@ -26303,6 +26303,976 @@ extension UserFlashcardLocalQueryProperty
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
+extension GetAppSettingsLocalCollection on Isar {
+  IsarCollection<AppSettingsLocal> get appSettingsLocals => this.collection();
+}
+
+const AppSettingsLocalSchema = CollectionSchema(
+  name: r'AppSettingsLocal',
+  id: -1435930688633106090,
+  properties: {
+    r'isDirty': PropertySchema(
+      id: 0,
+      name: r'isDirty',
+      type: IsarType.bool,
+    ),
+    r'key': PropertySchema(
+      id: 1,
+      name: r'key',
+      type: IsarType.string,
+    ),
+    r'updatedAt': PropertySchema(
+      id: 2,
+      name: r'updatedAt',
+      type: IsarType.dateTime,
+    ),
+    r'valueJson': PropertySchema(
+      id: 3,
+      name: r'valueJson',
+      type: IsarType.string,
+    )
+  },
+  estimateSize: _appSettingsLocalEstimateSize,
+  serialize: _appSettingsLocalSerialize,
+  deserialize: _appSettingsLocalDeserialize,
+  deserializeProp: _appSettingsLocalDeserializeProp,
+  idName: r'id',
+  indexes: {
+    r'key': IndexSchema(
+      id: -4906094122524121629,
+      name: r'key',
+      unique: true,
+      replace: true,
+      properties: [
+        IndexPropertySchema(
+          name: r'key',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'isDirty': IndexSchema(
+      id: 5701622868881901852,
+      name: r'isDirty',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'isDirty',
+          type: IndexType.value,
+          caseSensitive: false,
+        )
+      ],
+    )
+  },
+  links: {},
+  embeddedSchemas: {},
+  getId: _appSettingsLocalGetId,
+  getLinks: _appSettingsLocalGetLinks,
+  attach: _appSettingsLocalAttach,
+  version: '3.3.2',
+);
+
+int _appSettingsLocalEstimateSize(
+  AppSettingsLocal object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  bytesCount += 3 + object.key.length * 3;
+  bytesCount += 3 + object.valueJson.length * 3;
+  return bytesCount;
+}
+
+void _appSettingsLocalSerialize(
+  AppSettingsLocal object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  writer.writeBool(offsets[0], object.isDirty);
+  writer.writeString(offsets[1], object.key);
+  writer.writeDateTime(offsets[2], object.updatedAt);
+  writer.writeString(offsets[3], object.valueJson);
+}
+
+AppSettingsLocal _appSettingsLocalDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  final object = AppSettingsLocal();
+  object.isDirty = reader.readBool(offsets[0]);
+  object.key = reader.readString(offsets[1]);
+  object.updatedAt = reader.readDateTime(offsets[2]);
+  object.valueJson = reader.readString(offsets[3]);
+  return object;
+}
+
+P _appSettingsLocalDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
+    case 0:
+      return (reader.readBool(offset)) as P;
+    case 1:
+      return (reader.readString(offset)) as P;
+    case 2:
+      return (reader.readDateTime(offset)) as P;
+    case 3:
+      return (reader.readString(offset)) as P;
+    default:
+      throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+Id _appSettingsLocalGetId(AppSettingsLocal object) {
+  return object.id;
+}
+
+List<IsarLinkBase<dynamic>> _appSettingsLocalGetLinks(AppSettingsLocal object) {
+  return [];
+}
+
+void _appSettingsLocalAttach(
+    IsarCollection<dynamic> col, Id id, AppSettingsLocal object) {}
+
+extension AppSettingsLocalByIndex on IsarCollection<AppSettingsLocal> {
+  Future<AppSettingsLocal?> getByKey(String key) {
+    return getByIndex(r'key', [key]);
+  }
+
+  AppSettingsLocal? getByKeySync(String key) {
+    return getByIndexSync(r'key', [key]);
+  }
+
+  Future<bool> deleteByKey(String key) {
+    return deleteByIndex(r'key', [key]);
+  }
+
+  bool deleteByKeySync(String key) {
+    return deleteByIndexSync(r'key', [key]);
+  }
+
+  Future<List<AppSettingsLocal?>> getAllByKey(List<String> keyValues) {
+    final values = keyValues.map((e) => [e]).toList();
+    return getAllByIndex(r'key', values);
+  }
+
+  List<AppSettingsLocal?> getAllByKeySync(List<String> keyValues) {
+    final values = keyValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'key', values);
+  }
+
+  Future<int> deleteAllByKey(List<String> keyValues) {
+    final values = keyValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'key', values);
+  }
+
+  int deleteAllByKeySync(List<String> keyValues) {
+    final values = keyValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'key', values);
+  }
+
+  Future<Id> putByKey(AppSettingsLocal object) {
+    return putByIndex(r'key', object);
+  }
+
+  Id putByKeySync(AppSettingsLocal object, {bool saveLinks = true}) {
+    return putByIndexSync(r'key', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByKey(List<AppSettingsLocal> objects) {
+    return putAllByIndex(r'key', objects);
+  }
+
+  List<Id> putAllByKeySync(List<AppSettingsLocal> objects,
+      {bool saveLinks = true}) {
+    return putAllByIndexSync(r'key', objects, saveLinks: saveLinks);
+  }
+}
+
+extension AppSettingsLocalQueryWhereSort
+    on QueryBuilder<AppSettingsLocal, AppSettingsLocal, QWhere> {
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterWhere> anyId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(const IdWhereClause.any());
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterWhere> anyIsDirty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'isDirty'),
+      );
+    });
+  }
+}
+
+extension AppSettingsLocalQueryWhere
+    on QueryBuilder<AppSettingsLocal, AppSettingsLocal, QWhereClause> {
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterWhereClause> idEqualTo(
+      Id id) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IdWhereClause.between(
+        lower: id,
+        upper: id,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterWhereClause>
+      idNotEqualTo(Id id) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
+            )
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
+            )
+            .addWhereClause(
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
+            );
+      }
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterWhereClause>
+      idGreaterThan(Id id, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IdWhereClause.greaterThan(lower: id, includeLower: include),
+      );
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterWhereClause>
+      idLessThan(Id id, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IdWhereClause.lessThan(upper: id, includeUpper: include),
+      );
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterWhereClause> idBetween(
+    Id lowerId,
+    Id upperId, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IdWhereClause.between(
+        lower: lowerId,
+        includeLower: includeLower,
+        upper: upperId,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterWhereClause>
+      keyEqualTo(String key) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'key',
+        value: [key],
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterWhereClause>
+      keyNotEqualTo(String key) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'key',
+              lower: [],
+              upper: [key],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'key',
+              lower: [key],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'key',
+              lower: [key],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'key',
+              lower: [],
+              upper: [key],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterWhereClause>
+      isDirtyEqualTo(bool isDirty) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'isDirty',
+        value: [isDirty],
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterWhereClause>
+      isDirtyNotEqualTo(bool isDirty) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isDirty',
+              lower: [],
+              upper: [isDirty],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isDirty',
+              lower: [isDirty],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isDirty',
+              lower: [isDirty],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'isDirty',
+              lower: [],
+              upper: [isDirty],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+}
+
+extension AppSettingsLocalQueryFilter
+    on QueryBuilder<AppSettingsLocal, AppSettingsLocal, QFilterCondition> {
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      idEqualTo(Id value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'id',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      idGreaterThan(
+    Id value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      idLessThan(
+    Id value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'id',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      idBetween(
+    Id lower,
+    Id upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      isDirtyEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isDirty',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      keyEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'key',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      keyGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'key',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      keyLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'key',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      keyBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'key',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      keyStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'key',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      keyEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'key',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      keyContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'key',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      keyMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'key',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      keyIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'key',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      keyIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'key',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      updatedAtEqualTo(DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'updatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      updatedAtGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'updatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      updatedAtLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'updatedAt',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      updatedAtBetween(
+    DateTime lower,
+    DateTime upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'updatedAt',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      valueJsonEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'valueJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      valueJsonGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'valueJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      valueJsonLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'valueJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      valueJsonBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'valueJson',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      valueJsonStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'valueJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      valueJsonEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'valueJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      valueJsonContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'valueJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      valueJsonMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'valueJson',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      valueJsonIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'valueJson',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterFilterCondition>
+      valueJsonIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'valueJson',
+        value: '',
+      ));
+    });
+  }
+}
+
+extension AppSettingsLocalQueryObject
+    on QueryBuilder<AppSettingsLocal, AppSettingsLocal, QFilterCondition> {}
+
+extension AppSettingsLocalQueryLinks
+    on QueryBuilder<AppSettingsLocal, AppSettingsLocal, QFilterCondition> {}
+
+extension AppSettingsLocalQuerySortBy
+    on QueryBuilder<AppSettingsLocal, AppSettingsLocal, QSortBy> {
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      sortByIsDirty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDirty', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      sortByIsDirtyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDirty', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy> sortByKey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'key', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      sortByKeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'key', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      sortByUpdatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      sortByUpdatedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      sortByValueJson() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'valueJson', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      sortByValueJsonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'valueJson', Sort.desc);
+    });
+  }
+}
+
+extension AppSettingsLocalQuerySortThenBy
+    on QueryBuilder<AppSettingsLocal, AppSettingsLocal, QSortThenBy> {
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy> thenById() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'id', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      thenByIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'id', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      thenByIsDirty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDirty', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      thenByIsDirtyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDirty', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy> thenByKey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'key', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      thenByKeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'key', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      thenByUpdatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      thenByUpdatedAtDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'updatedAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      thenByValueJson() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'valueJson', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QAfterSortBy>
+      thenByValueJsonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'valueJson', Sort.desc);
+    });
+  }
+}
+
+extension AppSettingsLocalQueryWhereDistinct
+    on QueryBuilder<AppSettingsLocal, AppSettingsLocal, QDistinct> {
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QDistinct>
+      distinctByIsDirty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isDirty');
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QDistinct> distinctByKey(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'key', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QDistinct>
+      distinctByUpdatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'updatedAt');
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, AppSettingsLocal, QDistinct>
+      distinctByValueJson({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'valueJson', caseSensitive: caseSensitive);
+    });
+  }
+}
+
+extension AppSettingsLocalQueryProperty
+    on QueryBuilder<AppSettingsLocal, AppSettingsLocal, QQueryProperty> {
+  QueryBuilder<AppSettingsLocal, int, QQueryOperations> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, bool, QQueryOperations> isDirtyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isDirty');
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, String, QQueryOperations> keyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'key');
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, DateTime, QQueryOperations>
+      updatedAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'updatedAt');
+    });
+  }
+
+  QueryBuilder<AppSettingsLocal, String, QQueryOperations> valueJsonProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'valueJson');
+    });
+  }
+}
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+
 extension GetFeatureFlagLocalCollection on Isar {
   IsarCollection<FeatureFlagLocal> get featureFlagLocals => this.collection();
 }

@@ -249,6 +249,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         child: Text.rich(
                           TextSpan(
                             children: [
+                              // ignore: prefer_const_constructors
                               TextSpan(text: 'I agree to the '), 
                               WidgetSpan(
                                 alignment: PlaceholderAlignment.middle,
