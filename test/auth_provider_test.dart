@@ -9,7 +9,12 @@ import 'package:prep_ethiopia/core/network/api_models.dart' as api;
 import 'package:prep_ethiopia/core/database/isar_models.dart';
 
 class MockRemoteApiService extends Mock implements RemoteApiService {}
-class MockIsar extends Mock implements Isar {}
+class MockIsar extends Mock implements Isar {
+  @override
+  Future<T> writeTxn<T>(Future<T> Function() callback, {bool silent = false}) async {
+    return await callback();
+  }
+}
 class MockSupabaseClient extends Mock implements supabase.SupabaseClient {}
 class MockGoTrueClient extends Mock implements supabase.GoTrueClient {}
 class MockProfileCollection extends Mock implements IsarCollection<ProfileLocal> {}
@@ -40,10 +45,6 @@ void main() {
     when(() => mockSupabase.auth).thenReturn(mockGoTrue);
     when(() => mockGoTrue.onAuthStateChange).thenAnswer((_) => const Stream.empty());
     when(() => mockGoTrue.currentSession).thenReturn(null);
-    when(() => mockIsar.writeTxn(any())).thenAnswer((invocation) {
-      final callback = invocation.positionalArguments[0] as Future<void> Function();
-      return callback();
-    });
   });
 
   test('Initial state is correct', () {

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState, AuthResponse, AuthException;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 
 import '../../core/database/isar_models.dart';
 import '../../core/database/isar_provider.dart';
@@ -50,16 +51,42 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final RemoteApiService _api;
   final Isar _isar;
-  final SupabaseClient _supabase;
+  final SupabaseClient? _supabase;
+  final bool _hasSupabase;
 
   AuthNotifier(this._api, this._isar, {SupabaseClient? supabase})
-      : _supabase = supabase ?? Supabase.instance.client,
+      : _supabase = supabase,
+        _hasSupabase = supabase != null,
         super(AuthState()) {
     _init();
   }
 
+  SupabaseClient get _client {
+    if (_hasSupabase && _supabase != null) {
+      return _supabase!;
+    }
+    return Supabase.instance.client;
+  }
+
+  bool get _supabaseInitialized {
+    if (_hasSupabase && _supabase != null) {
+      return true;
+    }
+    try {
+      Supabase.instance.client;
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   void _init() {
-    _supabase.auth.onAuthStateChange.listen((data) {
+    if (!_supabaseInitialized) {
+      debugPrint('Supabase not initialized - running in offline mode');
+      return;
+    }
+
+    _client.auth.onAuthStateChange.listen((data) {
       final session = data.session;
       if (session != null) {
         _loadProfile(session.user.id, session.accessToken);
@@ -72,9 +99,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> loadInitialSession() async {
-    final session = _supabase.auth.currentSession;
-    if (session != null) {
-      await _loadProfile(session.user.id, session.accessToken);
+    if (!_supabaseInitialized) return;
+    
+    try {
+      final session = _client.auth.currentSession;
+      if (session != null) {
+        await _loadProfile(session.user.id, session.accessToken);
+      }
+    } catch (_) {
+      // Ignore errors in offline mode
     }
   }
 
@@ -129,14 +162,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final response = await _api.signIn(email: email, password: password);
 
-      if (response.accessToken != null && response.refreshToken != null && response.user != null) {
+if (response.accessToken != null && response.refreshToken != null && response.user != null) {
         final userId = (response.user as Map)['id'] as String;
         _api.setAuthToken(response.accessToken);
-        await _supabase.auth.setSession(response.accessToken!);
+        if (_supabaseInitialized) {
+          await _client.auth.setSession(response.accessToken!);
+        }
         await _loadProfile(userId, response.accessToken!);
       }
-      
-      // Reset loading if no token was returned (though signIn should throw on error)
+
       state = state.copyWith(isLoading: false);
       return true;
     } catch (e) {
@@ -176,7 +210,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (response.accessToken != null && response.refreshToken != null && response.user != null) {
         final userId = (response.user as Map)['id'] as String;
         _api.setAuthToken(response.accessToken);
-        await _supabase.auth.setSession(response.accessToken!);
+        if (_supabaseInitialized) {
+          await _client.auth.setSession(response.accessToken!);
+        }
         await _loadProfile(userId, response.accessToken!);
       }
 
@@ -218,7 +254,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> signOut() async {
-    await _supabase.auth.signOut();
+    if (_supabaseInitialized) {
+      await _client.auth.signOut();
+    }
 
     // For now, wipe local progress logs to keep user privacy.
     await _isar.writeTxn(() async {
@@ -329,13 +367,37 @@ class AuthNotifier extends StateNotifier<AuthState> {
 }
 
 final remoteApiServiceProvider = Provider<RemoteApiService>((ref) {
-  final baseUrl = '${dotenv.env['SUPABASE_URL']}/functions/v1/dynamic-api';
-  final anonKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
-  return RemoteApiService(baseUrl: baseUrl, apiKey: anonKey);
+  final supabaseUrl = dotenv.env['SUPABASE_URL'] ?? '';
+  final supabaseKey = dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+  final hasValidConfig = supabaseUrl.isNotEmpty && 
+      supabaseKey.isNotEmpty && 
+      !supabaseUrl.contains('your-project') && 
+      !supabaseKey.contains('your-anon-key');
+  
+  if (hasValidConfig) {
+    final baseUrl = '$supabaseUrl/functions/v1/dynamic-api';
+    return RemoteApiService(baseUrl: baseUrl, apiKey: supabaseKey);
+  } else {
+    // Return a mock/placeholder service that will fail gracefully
+    return RemoteApiService(baseUrl: '', apiKey: '');
+  }
 });
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final api = ref.watch(remoteApiServiceProvider);
   final isar = ref.watch(isarProvider);
-  return AuthNotifier(api, isar);
+  final hasValidConfig = (dotenv.env['SUPABASE_URL'] ?? '').isNotEmpty && 
+      (dotenv.env['SUPABASE_ANON_KEY'] ?? '').isNotEmpty && 
+      !(dotenv.env['SUPABASE_URL'] ?? '').contains('your-project') && 
+      !(dotenv.env['SUPABASE_ANON_KEY'] ?? '').contains('your-anon-key');
+  
+  SupabaseClient? supabaseClient;
+  if (hasValidConfig) {
+    try {
+      supabaseClient = Supabase.instance.client;
+    } catch (_) {
+      // Supabase not initialized
+    }
+  }
+  return AuthNotifier(api, isar, supabase: supabaseClient);
 });

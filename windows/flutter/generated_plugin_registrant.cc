@@ -8,8 +8,10 @@
 
 #include <app_links/app_links_plugin_c_api.h>
 #include <connectivity_plus/connectivity_plus_windows_plugin.h>
-#include <isar_flutter_libs/isar_flutter_libs_plugin.h>
-#include <passkeys_windows/passkeys_windows_plugin.h>
+#include <flutter_inappwebview_windows/flutter_inappwebview_windows_plugin_c_api.h>
+#include <flutter_secure_storage_windows/flutter_secure_storage_windows_plugin.h>
+#include <isar_community_flutter_libs/isar_flutter_libs_plugin.h>
+#include <syncfusion_pdfviewer_windows/syncfusion_pdfviewer_windows_plugin.h>
 #include <url_launcher_windows/url_launcher_windows.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
@@ -17,10 +19,14 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("AppLinksPluginCApi"));
   ConnectivityPlusWindowsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("ConnectivityPlusWindowsPlugin"));
+  FlutterInappwebviewWindowsPluginCApiRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("FlutterInappwebviewWindowsPluginCApi"));
+  FlutterSecureStorageWindowsPluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("FlutterSecureStorageWindowsPlugin"));
   IsarFlutterLibsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("IsarFlutterLibsPlugin"));
-  PasskeysWindowsPluginRegisterWithRegistrar(
-      registry->GetRegistrarForPlugin("PasskeysWindowsPlugin"));
+  SyncfusionPdfviewerWindowsPluginRegisterWithRegistrar(
+      registry->GetRegistrarForPlugin("SyncfusionPdfviewerWindowsPlugin"));
   UrlLauncherWindowsRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("UrlLauncherWindows"));
 }

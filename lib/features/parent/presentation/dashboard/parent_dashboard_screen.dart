@@ -125,13 +125,18 @@ class _ParentDashboardScreenState extends ConsumerState<ParentDashboardScreen> {
           ),
         ],
       ),
-      body: _links.isEmpty 
-        ? _buildEmptyState() 
-        : ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: _links.length,
-            itemBuilder: (context, index) => _buildChildCard(_links[index].studentUuid),
-          ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 900),
+          child: _links.isEmpty 
+            ? _buildEmptyState() 
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: _links.length,
+                itemBuilder: (context, index) => _buildChildCard(_links[index].studentUuid),
+              ),
+        ),
+      ),
     );
   }
 

@@ -5,8 +5,10 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   connectivity_plus
-  isar_flutter_libs
-  passkeys_windows
+  flutter_inappwebview_windows
+  flutter_secure_storage_windows
+  isar_community_flutter_libs
+  syncfusion_pdfviewer_windows
   url_launcher_windows
 )
 

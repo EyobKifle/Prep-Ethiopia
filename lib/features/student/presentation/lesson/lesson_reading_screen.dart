@@ -152,10 +152,13 @@ class _LessonReadingScreenState extends ConsumerState<LessonReadingScreen> {
         title: Text(_currentStep!.title.getLocalized(context.currentLocale)),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 860),
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView(
                 children: [
                   Markdown(
                     data: _currentStep!.contentMarkdown.getLocalized(context.currentLocale),
@@ -235,6 +238,8 @@ class _LessonReadingScreenState extends ConsumerState<LessonReadingScreen> {
           ],
         ),
       ),
+    ),
+  ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           context.push('/student/ai-tutor?lessonUuid=${widget.lessonUuid}');

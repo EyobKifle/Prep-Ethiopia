@@ -57,10 +57,24 @@ flutter:
   uses-material-design: true
   assets:
     - assets/subjects/
+    - assets/icons/
     - .env
 
 flutter_launcher_icons:
-  android: true
+  android: false
   ios: true
   image_path: "assets/icons/app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#0B62FF"
+  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+  windows:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+  macos:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
 
