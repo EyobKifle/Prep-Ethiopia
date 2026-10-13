@@ -159,3 +159,4 @@ class DatabaseProvider {
   static bool get isInitialized => _instance != null;
   static bool get isWeb => kIsWeb;
 }
+
