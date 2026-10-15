@@ -96,14 +96,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     ).then((_) {
       debugPrint('_pageController.nextPage() completed! page=${_pageController.hasClients ? _pageController.page : null}');
       _isAnimating = false;
+      if (_currentStep == 3) {
+        _startSimulatedDownload();
+      }
     }).catchError((e) {
       debugPrint('_pageController.nextPage() ERROR: $e');
       _isAnimating = false;
     });
-
-    if (_currentStep == 3) {
-      _startSimulatedDownload();
-    }
   }
 
   void _previousStep() {
