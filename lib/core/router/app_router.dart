@@ -59,8 +59,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // 2. If already has profile, prevent access to login/signup/onboarding
+      //    BUT allow students (signed-in or guest) with incomplete profiles to stay.
       if ((isSignedIn || hasProfile) && isLoggingIn) {
-        final role = profile!.role;
+        if (profile == null) return '/onboarding';
+
+        final role = profile.role;
+
+        // Allow students with incomplete profiles to continue onboarding
+        if (role == 'student') {
+          if (profile.selectedGradeLevel == null || profile.preferredLanguage.isEmpty) {
+            return null; // Stay on onboarding
+          }
+        }
+
         if (role == 'admin' || role == 'teacher') return '/admin';
         if (role == 'parent') return '/parent';
         return '/student';
@@ -116,7 +127,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
+        builder: (context, state) {
+          final testRole = state.uri.queryParameters['testRole'];
+          return OnboardingScreen(testRole: testRole);
+        },
       ),
 
       // -------------------------------------------------------------

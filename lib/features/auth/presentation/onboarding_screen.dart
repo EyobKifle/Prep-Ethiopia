@@ -10,7 +10,8 @@ import '../../sync/sync_service.dart';
 import '../auth_provider.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
-  const OnboardingScreen({super.key});
+  final String? testRole;
+  const OnboardingScreen({super.key, this.testRole});
 
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -30,11 +31,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     debugPrint('_OnboardingScreenState.initState! hashCode=$hashCode');
     _resumeFromExistingProfile();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      // Handle test mode - bypass onboarding for testing role UIs without auth
+      if (widget.testRole != null) {
+        _initTestMode();
+      }
+
       if (mounted) {
         debugPrint('addPostFrameCallback firing! _currentStep=$_currentStep');
         _pageController.jumpToPage(_currentStep);
       }
     });
+  }
+
+  void _initTestMode() {
+    final profile = ProfileLocal()
+      ..uuid = 'test_${widget.testRole}_${DateTime.now().millisecondsSinceEpoch}'
+      ..role = widget.testRole!
+      ..preferredLanguage = ref.read(localeProvider)
+      ..selectedGradeLevel = 9
+      ..isDirty = false
+      ..updatedAt = DateTime.now();
+
+    ref.read(authProvider.notifier).setGuestSession(profile);
   }
 
   @override
@@ -57,20 +77,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       _selectedGrade = profile.selectedGradeLevel;
     }
 
-    final isSignedIn = ref.read(authProvider).user != null;
-
-    if (isSignedIn) {
-      if (hasLanguage && hasGrade) {
-        _currentStep = 3;
-      } else if (hasLanguage) {
-        _currentStep = 2;
-      } else {
-        _currentStep = 1;
-      }
+    // Resume from the appropriate step based on profile completeness
+    // (works for both signed-in and guest users)
+    if (hasLanguage && hasGrade) {
+      _currentStep = 3;
+    } else if (hasLanguage) {
+      _currentStep = 2;
+    } else {
+      _currentStep = 1;
     }
   }
 
   void _nextStep() {
+    if (!mounted) return;
     debugPrint('_nextStep called! _isAnimating=$_isAnimating, _currentStep=$_currentStep');
     if (_isAnimating || _currentStep >= 3) {
       debugPrint('_nextStep BLOCKED by _isAnimating=$_isAnimating or _currentStep=$_currentStep');
