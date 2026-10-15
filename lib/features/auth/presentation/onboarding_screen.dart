@@ -40,6 +40,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void dispose() {
     debugPrint('_OnboardingScreenState.dispose! hashCode=$hashCode');
+    _pageController.dispose();
     super.dispose();
   }
 
