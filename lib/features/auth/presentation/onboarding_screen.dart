@@ -27,12 +27,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
+    debugPrint('_OnboardingScreenState.initState! hashCode=$hashCode');
     _resumeFromExistingProfile();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        debugPrint('addPostFrameCallback firing! _currentStep=$_currentStep');
         _pageController.jumpToPage(_currentStep);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    debugPrint('_OnboardingScreenState.dispose! hashCode=$hashCode');
+    super.dispose();
   }
 
   void _resumeFromExistingProfile() {
@@ -62,7 +70,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _nextStep() {
-    if (_isAnimating || _currentStep >= 3) return;
+    debugPrint('_nextStep called! _isAnimating=$_isAnimating, _currentStep=$_currentStep');
+    if (_isAnimating || _currentStep >= 3) {
+      debugPrint('_nextStep BLOCKED by _isAnimating=$_isAnimating or _currentStep=$_currentStep');
+      return;
+    }
 
     // Enforce grade selection before entering the download step.
     if (_currentStep == 2 && _selectedGrade == null) {
@@ -77,10 +89,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       _currentStep++;
     });
 
+    debugPrint('Calling _pageController.nextPage()... hasClients=${_pageController.hasClients}, positions=${_pageController.positions.length}, page=${_pageController.hasClients ? _pageController.page : null}');
     _pageController.nextPage(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     ).then((_) {
+      debugPrint('_pageController.nextPage() completed! page=${_pageController.hasClients ? _pageController.page : null}');
+      _isAnimating = false;
+    }).catchError((e) {
+      debugPrint('_pageController.nextPage() ERROR: $e');
       _isAnimating = false;
     });
 
