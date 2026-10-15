@@ -424,8 +424,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             title: 'አማርኛ (Amharic)',
             subtitle: 'በአማርኛ ቋንቋ ይማሩ',
             isSelected: currentLang == 'am',
-            onTap: () {
-              ref.read(localeProvider.notifier).setLocale('am');
+            onTap: () async {
+              await ref.read(localeProvider.notifier).setLocale('am');
+              if (!mounted) return;
               _nextStep();
             },
           ),
@@ -437,8 +438,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             title: 'English',
             subtitle: 'Learn in English language',
             isSelected: currentLang == 'en',
-            onTap: () {
-              ref.read(localeProvider.notifier).setLocale('en');
+            onTap: () async {
+              await ref.read(localeProvider.notifier).setLocale('en');
+              if (!mounted) return;
               _nextStep();
             },
           ),

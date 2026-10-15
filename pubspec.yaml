@@ -61,7 +61,7 @@ flutter:
     - .env
 
 flutter_launcher_icons:
-  android: false
+  android: true
   ios: true
   image_path: "assets/icons/app_icon.png"
   min_sdk_android: 21
