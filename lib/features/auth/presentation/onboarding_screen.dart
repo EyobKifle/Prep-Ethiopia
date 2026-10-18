@@ -233,6 +233,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AuthState>(authProvider, (previous, next) {
+      if (widget.guestMode ||
+          previous?.profile != null ||
+          next.profile == null ||
+          !mounted) {
+        return;
+      }
+
+      _resumeFromExistingProfile();
+      setState(() {});
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _pageController.hasClients) {
+          _pageController.jumpToPage(_currentStep);
+        }
+      });
+    });
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
