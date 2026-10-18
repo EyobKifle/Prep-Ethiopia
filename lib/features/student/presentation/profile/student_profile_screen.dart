@@ -94,7 +94,7 @@ class StudentProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              context.tr('guestProfileMsg'),
+              context.tr('guestProfileSyncMsg'),
               style: AppTheme.getBodyStyle(context: context),
             ),
             const SizedBox(height: 16),

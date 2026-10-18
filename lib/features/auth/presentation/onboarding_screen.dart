@@ -25,6 +25,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   double _downloadProgress = 0.0;
 
   bool _isAnimating = false;
+  bool _isChoosingLanguage = false;
+  bool _isSettingUp = false;
+  bool _setupFailed = false;
+  ProfileLocal? _pendingProfile;
 
   @override
   void initState() {
@@ -98,6 +102,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return _pageController.page?.round() ?? _currentStep;
   }
 
+  Future<void> _chooseLanguage(String languageCode) async {
+    if (_isChoosingLanguage || _isAnimating) return;
+    setState(() => _isChoosingLanguage = true);
+    try {
+      await ref.read(localeProvider.notifier).setLocale(languageCode);
+    } catch (e) {
+      debugPrint('Could not persist language preference: $e');
+    }
+    if (!mounted) return;
+    setState(() => _isChoosingLanguage = false);
+    _nextStep();
+  }
+
+  Future<void> _continueToDashboard() async {
+    final profile = _pendingProfile;
+    final auth = ref.read(authProvider);
+    if (profile != null) {
+      if (auth.user == null) {
+        ref.read(authProvider.notifier).setGuestSession(profile);
+      } else {
+        await ref.read(authProvider.notifier).updateProfile(profile);
+      }
+    }
+    if (mounted) context.go('/student');
+  }
+
   void _nextStep() {
     if (!mounted) return;
     final visibleStep = _visibleStep;
@@ -144,88 +174,87 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     });
   }
 
-  void _startSimulatedDownload() async {
-    // Hard guard: prevent writing a null grade into the profile.
+  Future<void> _startSimulatedDownload() async {
     if (_selectedGrade == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.tr('pleaseSelectGrade'))),
       );
-      setState(() {
-        _currentStep = 2;
-      });
+      setState(() => _currentStep = 2);
       _pageController.jumpToPage(2);
       return;
     }
 
     setState(() {
-      _downloadProgress = 0.1; // Start progress
+      _isSettingUp = true;
+      _setupFailed = false;
+      _downloadProgress = 0.1;
     });
 
-    // 1. Save configuration to local database
     final isar = ref.read(isarProvider);
     final auth = ref.read(authProvider);
     final currentLang = ref.read(localeProvider);
+    late ProfileLocal profile;
 
-    ProfileLocal? profile;
-
-    // Create a local profile for the guest student if none exists
     if (auth.profile == null) {
       profile = ProfileLocal()
-        ..uuid = 'guest_${DateTime.now().millisecondsSinceEpoch}'
+        ..uuid = auth.user?.id ?? 'guest_' + DateTime.now().millisecondsSinceEpoch.toString()
         ..role = 'student'
         ..preferredLanguage = currentLang
-        ..selectedGradeLevel = _selectedGrade!
-        ..isDirty = false
+        ..selectedGradeLevel = _selectedGrade
+        ..isDirty = auth.user != null
         ..updatedAt = DateTime.now();
-      
+
       await isar.writeTxn(() async {
-        await isar.profileLocals.put(profile!);
+        await isar.profileLocals.put(profile);
       });
-      ref.read(authProvider.notifier).setGuestSession(profile);
     } else {
-      profile = auth.profile;
+      final currentProfile = auth.profile!;
+      final profileUuid = auth.user?.id ?? currentProfile.uuid;
       await isar.writeTxn(() async {
-        final profileUuid = auth.user?.id ?? auth.profile?.uuid;
-        if (profileUuid != null) {
-          final p = await isar.profileLocals.filter().uuidEqualTo(profileUuid).findFirst();
-          if (p != null) {
-            p.preferredLanguage = currentLang;
-            p.selectedGradeLevel = _selectedGrade;
-            p.updatedAt = DateTime.now();
-            p.isDirty = auth.user != null;
-            await isar.profileLocals.put(p);
-            profile = p;
-            
-            if (auth.user == null) {
-               ref.read(authProvider.notifier).setGuestSession(p);
-            }
-          }
-        }
+        final localProfile = await isar.profileLocals
+                .filter()
+                .uuidEqualTo(profileUuid)
+                .findFirst() ??
+            currentProfile;
+        localProfile.preferredLanguage = currentLang;
+        localProfile.selectedGradeLevel = _selectedGrade;
+        localProfile.updatedAt = DateTime.now();
+        localProfile.isDirty = auth.user != null;
+        await isar.profileLocals.put(localProfile);
+        profile = localProfile;
       });
     }
+    _pendingProfile = profile;
 
-    setState(() {
-      _downloadProgress = 0.3;
-    });
+    if (!mounted) return;
+    setState(() => _downloadProgress = 0.3);
 
-    // 2. Trigger Real Sync for the curriculum metadata
     try {
-      final syncNotifier = ref.read(syncProvider.notifier);
-      await syncNotifier.triggerSync();
-      
+      await ref.read(syncProvider.notifier).triggerSync();
+      if (auth.user != null &&
+          ref.read(syncProvider).status == SyncStatus.error) {
+        if (!mounted) return;
+        setState(() {
+          _downloadProgress = 1.0;
+          _isSettingUp = false;
+          _setupFailed = true;
+        });
+        return;
+      }
+      if (!mounted) return;
       setState(() {
         _downloadProgress = 1.0;
+        _isSettingUp = false;
       });
+      await _continueToDashboard();
     } catch (e) {
-      // Even if sync fails, we can proceed to the dashboard where sync will retry
       debugPrint('Initial sync failed: $e');
+      if (!mounted) return;
       setState(() {
         _downloadProgress = 1.0;
+        _isSettingUp = false;
+        _setupFailed = true;
       });
-    }
-
-    if (mounted) {
-      context.go('/student');
     }
   }
 
@@ -261,21 +290,43 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Row(
-                  children: List.generate(3, (index) {
+                  children: [
+                    context.tr('stepLanguage'),
+                    context.tr('stepGrade'),
+                    context.tr('stepReady'),
+                  ].asMap().entries.map((entry) {
+                    final index = entry.key;
                     final active = index <= (_currentStep - 1);
                     return Expanded(
-                      child: Container(
-                        height: 4,
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        decoration: BoxDecoration(
-                          color: active
-                              ? (isDark ? Colors.white : Colors.black)
-                              : (isDark ? Colors.grey[800] : Colors.grey[300]),
-                          borderRadius: BorderRadius.circular(2),
+                      child: Padding(
+                        padding: EdgeInsets.only(left: index == 0 ? 0 : 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: active
+                                    ? (isDark ? Colors.white : Colors.black)
+                                    : (isDark ? Colors.grey[800] : Colors.grey[300]),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              entry.value,
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: active
+                                        ? Theme.of(context).colorScheme.onSurface
+                                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                                    fontWeight: active ? FontWeight.w600 : FontWeight.normal,
+                                  ),
+                            ),
+                          ],
                         ),
                       ),
                     );
-                  }),
+                  }).toList(),
                 ),
               ),
 
@@ -299,19 +350,31 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
 
             // Navigation Bottom Bar
-            if (_currentStep > 0 && _currentStep < 3)
+            if (_currentStep > 0)
               Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     OutlinedButton(
-                      onPressed: _previousStep,
+                      onPressed: _isSettingUp ? null : _previousStep,
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       ),
                       child: Text(context.tr('back')),
                     ),
+                    const Spacer(),
+                    if (_currentStep == 2)
+                      FilledButton(
+                        onPressed: _selectedGrade == null || _isAnimating
+                            ? null
+                            : _nextStep,
+                        child: Text(context.tr('continue')),
+                      ),
+                    if (_currentStep == 3 && _setupFailed)
+                      FilledButton(
+                        onPressed: _continueToDashboard,
+                        child: Text(context.tr('continueToDashboard')),
+                      ),
                   ],
                 ),
               ),
@@ -470,11 +533,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             title: 'አማርኛ (Amharic)',
             subtitle: 'በአማርኛ ቋንቋ ይማሩ',
             isSelected: currentLang == 'am',
-            onTap: () async {
-              await ref.read(localeProvider.notifier).setLocale('am');
-              if (!mounted) return;
-              _nextStep();
-            },
+            onTap: _isChoosingLanguage ? null : () => _chooseLanguage('am'),
           ),
           const SizedBox(height: 16),
 
@@ -484,11 +543,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             title: 'English',
             subtitle: 'Learn in English language',
             isSelected: currentLang == 'en',
-            onTap: () async {
-              await ref.read(localeProvider.notifier).setLocale('en');
-              if (!mounted) return;
-              _nextStep();
-            },
+            onTap: _isChoosingLanguage ? null : () => _chooseLanguage('en'),
           ),
         ],
       ),
@@ -500,7 +555,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     required String title,
     required String subtitle,
     required bool isSelected,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -551,6 +606,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _buildGradeStep(BuildContext context) {
+    final currentLang = ref.watch(localeProvider);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Column(
@@ -568,7 +624,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: AppTheme.getBodyStyle(context: context),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 12),
+          Chip(
+            avatar: const Icon(Icons.translate, size: 18),
+            label: Text(context.tr(
+              'selectedLanguage',
+              arg: context.tr(currentLang == 'am' ? 'languageAmharic' : 'languageEnglish'),
+            )),
+          ),
+          const SizedBox(height: 20),
           Expanded(
             child: GridView.builder(
               shrinkWrap: true,
@@ -589,7 +653,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     setState(() {
                       _selectedGrade = gradeLevel;
                     });
-                    _nextStep();
                   },
                   borderRadius: AppTheme.borderRadius,
                   child: Container(
@@ -641,17 +704,33 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 24),
           Text(
-            context.tr('downloadResources'),
+            context.tr('setupTitle'),
             style: AppTheme.getHeadingStyle(context: context, fontSize: 20),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
-            context.tr('downloadSubtitle'),
+            context.tr('setupDashboard', arg: (_selectedGrade ?? '').toString()),
+            style: AppTheme.getHeadingStyle(context: context, fontSize: 18),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _setupFailed
+                ? context.tr('offlineSetupFailed')
+                : context.tr('setupDashboardSubtitle'),
             style: AppTheme.getBodyStyle(context: context),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 40),
+          if (ref.watch(authProvider).user == null) ...[
+            const SizedBox(height: 16),
+            Text(
+              context.tr('guestLocalSaveNotice'),
+              style: AppTheme.getBodyStyle(context: context),
+              textAlign: TextAlign.center,
+            ),
+          ],
+          const SizedBox(height: 32),
           ClipRRect(
             borderRadius: BorderRadius.circular(2),
             child: LinearProgressIndicator(
@@ -664,10 +743,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            '${(_downloadProgress * 100).toInt()}%',
-            style: AppTheme.getHeadingStyle(context: context, fontSize: 16),
-          ),
+          if (_isSettingUp)
+            Text(
+              ((_downloadProgress * 100).toInt()).toString() + '%',
+              style: AppTheme.getHeadingStyle(context: context, fontSize: 16),
+            ),
+          if (_setupFailed)
+            Text(
+              context.tr('offlineReady'),
+              style: AppTheme.getBodyStyle(context: context),
+            ),
         ],
       ),
     );

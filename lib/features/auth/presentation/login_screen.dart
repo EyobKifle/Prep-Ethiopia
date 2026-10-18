@@ -34,13 +34,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _submit() async {
     if (_formKey.currentState!.validate()) {
+      final guestUuid = ref.read(authProvider).profile?.uuid;
       final success = await ref.read(authProvider.notifier).signIn(
             _emailController.text.trim(),
             _passwordController.text,
           );
       if (success && mounted) {
         final authState = ref.read(authProvider);
-        final guestUuid = authState.profile?.uuid;
         final isGuestMerge = guestUuid != null && guestUuid.startsWith('guest_');
 
         if (isGuestMerge && authState.user != null) {
@@ -227,7 +227,7 @@ body: Center(
                         ? null
                         : () => context.go('/onboarding?guest=true'),
                     icon: const Icon(Icons.explore_outlined),
-                    label: const Text('Continue as a student guest'),
+                    label: Text(context.tr('continueAsGuest')),
                   ),
                 ],
               ),
