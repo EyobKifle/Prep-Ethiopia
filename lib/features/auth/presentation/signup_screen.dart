@@ -88,7 +88,13 @@ return Scaffold(
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black54),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              context.go('/onboarding');
+            }
+          },
         ),
       ),
       body: Center(
@@ -315,6 +321,16 @@ return Scaffold(
                     ),
                     child: const Text('Already have an account? Sign In'),
                   ),
+                  if (widget.role == 'student') ...[
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: authState.isLoading
+                          ? null
+                          : () => context.go('/onboarding?guest=true'),
+                      icon: const Icon(Icons.explore_outlined),
+                      label: const Text('Continue as a student guest'),
+                    ),
+                  ],
                 ],
               ),
             ),

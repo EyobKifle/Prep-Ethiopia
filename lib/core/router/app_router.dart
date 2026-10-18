@@ -129,7 +129,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/onboarding',
         builder: (context, state) {
           final testRole = state.uri.queryParameters['testRole'];
-          return OnboardingScreen(testRole: testRole);
+          final guestMode = state.uri.queryParameters['guest'] == 'true';
+          return OnboardingScreen(testRole: testRole, guestMode: guestMode);
         },
       ),
 

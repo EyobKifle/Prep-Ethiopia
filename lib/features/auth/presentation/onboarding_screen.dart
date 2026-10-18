@@ -11,7 +11,8 @@ import '../auth_provider.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   final String? testRole;
-  const OnboardingScreen({super.key, this.testRole});
+  final bool guestMode;
+  const OnboardingScreen({super.key, this.testRole, this.guestMode = false});
 
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -29,7 +30,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   void initState() {
     super.initState();
     debugPrint('_OnboardingScreenState.initState! hashCode=$hashCode');
-    _resumeFromExistingProfile();
+    if (widget.guestMode) {
+      _currentStep = 1;
+    } else {
+      _resumeFromExistingProfile();
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 

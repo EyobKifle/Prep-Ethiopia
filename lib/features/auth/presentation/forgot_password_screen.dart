@@ -60,7 +60,13 @@ return Scaffold(
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black54),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              context.go('/login');
+            }
+          },
         ),
       ),
       body: Center(
