@@ -1,8 +1,8 @@
-import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
-import 'package:file_picker/file_picker.dart';
+
 import '../../../../core/database/isar_models.dart';
 import '../../../../core/database/isar_provider.dart';
 import '../../../../core/localization/app_localizations.dart';
@@ -69,14 +69,13 @@ class _WorksheetEditorScreenState extends ConsumerState<WorksheetEditorScreen> {
   }
 
   Future<void> _pickAndUploadPdf() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFile(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
     );
 
-    if (result != null && result.files.single.path != null) {
-      final file = File(result.files.single.path!);
-      final bytes = await file.readAsBytes();
+    if (result != null) {
+      final bytes = await result.readAsBytes();
       final filename = '${widget.worksheetUuid}.pdf';
       final api = ref.read(remoteApiServiceProvider);
 
