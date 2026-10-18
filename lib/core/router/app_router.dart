@@ -63,6 +63,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       if ((isSignedIn || hasProfile) && isLoggingIn) {
         if (profile == null) return '/onboarding';
 
+        final loc = state.matchedLocation;
+        final isGuestAuthUpgrade = !isSignedIn &&
+            profile.uuid.startsWith('guest_') &&
+            (loc == '/login' || loc == '/signup');
+        if (isGuestAuthUpgrade) return null;
+
         final role = profile.role;
 
         // Allow students with incomplete profiles to continue onboarding

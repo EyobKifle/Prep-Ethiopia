@@ -230,7 +230,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     setState(() => _downloadProgress = 0.3);
 
     try {
-      await ref.read(syncProvider.notifier).triggerSync();
+      await ref.read(syncProvider.notifier).triggerSync(profileOverride: profile);
       if (auth.user != null &&
           ref.read(syncProvider).status == SyncStatus.error) {
         if (!mounted) return;

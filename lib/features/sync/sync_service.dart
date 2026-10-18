@@ -98,8 +98,9 @@ class SyncNotifier extends StateNotifier<SyncState> {
     }
   }
 
-  Future<void> triggerSync() async {
+  Future<void> triggerSync({ProfileLocal? profileOverride}) async {
     final auth = _ref.read(authProvider);
+    final syncProfile = profileOverride ?? auth.profile;
     if (auth.user == null) return;
 
     final connectivity = _ref.read(connectivityProvider);
@@ -124,7 +125,7 @@ class SyncNotifier extends StateNotifier<SyncState> {
       await _pushUserProgress(api, auth.user!.id);
 
       // 2) PUSH: Admin Curriculum (if applicable)
-      if (auth.profile?.role == 'admin') {
+      if (syncProfile?.role == 'admin') {
         await _pushCurriculum(api);
       }
 
@@ -146,7 +147,7 @@ class SyncNotifier extends StateNotifier<SyncState> {
       final since = state.lastSyncedAt ?? DateTime.now().subtract(const Duration(days: 30));
       final curriculum = await api.fetchCurriculumIncremental(
         since: since,
-        gradeLevel: auth.profile?.selectedGradeLevel,
+        gradeLevel: syncProfile?.selectedGradeLevel,
       );
       await _pullCurriculum(curriculum);
 
