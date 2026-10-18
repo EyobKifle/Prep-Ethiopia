@@ -19,7 +19,6 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  final PageController _pageController = PageController();
   int _currentStep = 0;
   int? _selectedGrade;
   double _downloadProgress = 0.0;
@@ -39,24 +38,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     } else {
       _resumeFromExistingProfile();
     }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-
-      // Handle test mode - bypass onboarding for testing role UIs without auth
-      if (widget.testRole != null) {
-        _initTestMode();
-      }
-
-      if (mounted) {
-        debugPrint('addPostFrameCallback firing! _currentStep=$_currentStep');
-        _pageController.jumpToPage(_currentStep);
-      }
-    });
+    // Handle test mode - bypass onboarding for testing role UIs without auth.
+    if (widget.testRole != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _initTestMode();
+      });
+    }
   }
 
   void _initTestMode() {
     final profile = ProfileLocal()
-      ..uuid = 'test_${widget.testRole}_${DateTime.now().millisecondsSinceEpoch}'
+      ..uuid =
+          'test_${widget.testRole}_${DateTime.now().millisecondsSinceEpoch}'
       ..role = widget.testRole!
       ..preferredLanguage = ref.read(localeProvider)
       ..selectedGradeLevel = 9
@@ -69,7 +62,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void dispose() {
     debugPrint('_OnboardingScreenState.dispose! hashCode=$hashCode');
-    _pageController.dispose();
     super.dispose();
   }
 
@@ -95,11 +87,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     } else {
       _currentStep = 1;
     }
-  }
-
-  int get _visibleStep {
-    if (!_pageController.hasClients) return _currentStep;
-    return _pageController.page?.round() ?? _currentStep;
   }
 
   Future<void> _chooseLanguage(String languageCode) async {
@@ -130,48 +117,41 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _nextStep() {
     if (!mounted) return;
-    final visibleStep = _visibleStep;
-    debugPrint('_nextStep called! _isAnimating=$_isAnimating, visibleStep=$visibleStep');
-    if (_isAnimating || visibleStep >= 3) return;
+    debugPrint(
+        '_nextStep called! _isAnimating=$_isAnimating, step=$_currentStep');
+    if (_isAnimating || _currentStep >= 3) return;
 
     // Only require a grade when the visible page is the grade picker.
-    if (visibleStep == 2 && _selectedGrade == null) {
+    if (_currentStep == 2 && _selectedGrade == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.tr('pleaseSelectGrade'))),
       );
       return;
     }
 
-    final nextStep = visibleStep + 1;
-    _isAnimating = true;
-    _pageController.animateToPage(
-      nextStep,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    ).then((_) {
-      if (!mounted) return;
-      _isAnimating = false;
-      if (nextStep == 3) {
-        _startSimulatedDownload();
-      }
-    }).catchError((e) {
-      debugPrint('_pageController.animateToPage() ERROR: $e');
-      _isAnimating = false;
+    final nextStep = _currentStep + 1;
+    _setStep(nextStep);
+    if (nextStep == 3) {
+      Future<void>.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) _startSimulatedDownload();
+      });
+    }
+  }
+
+  void _setStep(int step) {
+    if (!mounted || _isAnimating || step < 0 || step > 3) return;
+    setState(() {
+      _currentStep = step;
+      _isAnimating = true;
+    });
+    Future<void>.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) setState(() => _isAnimating = false);
     });
   }
 
   void _previousStep() {
-    final visibleStep = _visibleStep;
-    if (_isAnimating || visibleStep <= 0) return;
-
-    _isAnimating = true;
-    _pageController.animateToPage(
-      visibleStep - 1,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    ).then((_) {
-      _isAnimating = false;
-    });
+    if (_isAnimating || _currentStep <= 0) return;
+    _setStep(_currentStep - 1);
   }
 
   Future<void> _startSimulatedDownload() async {
@@ -179,8 +159,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.tr('pleaseSelectGrade'))),
       );
-      setState(() => _currentStep = 2);
-      _pageController.jumpToPage(2);
+      _setStep(2);
       return;
     }
 
@@ -197,7 +176,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     if (auth.profile == null) {
       profile = ProfileLocal()
-        ..uuid = auth.user?.id ?? 'guest_${DateTime.now().millisecondsSinceEpoch}'
+        ..uuid =
+            auth.user?.id ?? 'guest_${DateTime.now().millisecondsSinceEpoch}'
         ..role = 'student'
         ..preferredLanguage = currentLang
         ..selectedGradeLevel = _selectedGrade
@@ -230,7 +210,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     setState(() => _downloadProgress = 0.3);
 
     try {
-      await ref.read(syncProvider.notifier).triggerSync(profileOverride: profile);
+      await ref
+          .read(syncProvider.notifier)
+          .triggerSync(profileOverride: profile);
       if (auth.user != null &&
           ref.read(syncProvider).status == SyncStatus.error) {
         if (!mounted) return;
@@ -272,15 +254,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
       _resumeFromExistingProfile();
       setState(() {});
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _pageController.hasClients) {
-          _pageController.jumpToPage(_currentStep);
-        }
-      });
     });
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -308,18 +285,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               decoration: BoxDecoration(
                                 color: active
                                     ? (isDark ? Colors.white : Colors.black)
-                                    : (isDark ? Colors.grey[800] : Colors.grey[300]),
+                                    : (isDark
+                                        ? Colors.grey[800]
+                                        : Colors.grey[300]),
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               entry.value,
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(
                                     color: active
-                                        ? Theme.of(context).colorScheme.onSurface
-                                        : Theme.of(context).colorScheme.onSurfaceVariant,
-                                    fontWeight: active ? FontWeight.w600 : FontWeight.normal,
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                    fontWeight: active
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
                                   ),
                             ),
                           ],
@@ -332,20 +320,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
             // Step Content
             Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (page) {
-                  if (_currentStep != page) {
-                    setState(() => _currentStep = page);
-                  }
-                },
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildWelcomeStep(context),
-                  _buildLanguageStep(context),
-                  _buildGradeStep(context),
-                  _buildDownloadStep(context),
-                ],
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOut,
+                switchOutCurve: Curves.easeIn,
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.04, 0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                ),
+                child: KeyedSubtree(
+                  key: ValueKey(_currentStep),
+                  child: switch (_currentStep) {
+                    0 => _buildWelcomeStep(context),
+                    1 => _buildLanguageStep(context),
+                    2 => _buildGradeStep(context),
+                    _ => _buildDownloadStep(context),
+                  },
+                ),
               ),
             ),
 
@@ -358,7 +355,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     OutlinedButton(
                       onPressed: _isSettingUp ? null : _previousStep,
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
                       ),
                       child: Text(context.tr('back')),
                     ),
@@ -410,7 +408,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          
           _buildRoleCard(
             context: context,
             title: context.tr('roleStudent'),
@@ -434,9 +431,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             icon: Icons.person_outline,
             onTap: () => context.go('/signup?role=teacher'),
           ),
-          
           const Spacer(),
-          
           OutlinedButton(
             onPressed: () => context.go('/login'),
             style: OutlinedButton.styleFrom(
@@ -476,7 +471,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                color: isDark
+                    ? Colors.white10
+                    : Colors.black.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: isDark ? Colors.white : Colors.black),
@@ -488,12 +485,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 children: [
                   Text(
                     title,
-                    style: AppTheme.getHeadingStyle(context: context, fontSize: 16),
+                    style: AppTheme.getHeadingStyle(
+                        context: context, fontSize: 16),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: AppTheme.getBodyStyle(context: context, fontSize: 13),
+                    style:
+                        AppTheme.getBodyStyle(context: context, fontSize: 13),
                   ),
                 ],
               ),
@@ -573,14 +572,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           borderRadius: AppTheme.borderRadius,
           color: isSelected
-              ? (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.02))
+              ? (isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.02))
               : Colors.transparent,
         ),
         child: Row(
           children: [
             Icon(
               isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: isSelected ? (isDark ? Colors.white : Colors.black) : Colors.grey,
+              color: isSelected
+                  ? (isDark ? Colors.white : Colors.black)
+                  : Colors.grey,
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -589,12 +592,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 children: [
                   Text(
                     title,
-                    style: AppTheme.getHeadingStyle(context: context, fontSize: 16),
+                    style: AppTheme.getHeadingStyle(
+                        context: context, fontSize: 16),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: AppTheme.getBodyStyle(context: context, fontSize: 13),
+                    style:
+                        AppTheme.getBodyStyle(context: context, fontSize: 13),
                   ),
                 ],
               ),
@@ -629,7 +634,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             avatar: const Icon(Icons.translate, size: 18),
             label: Text(context.tr(
               'selectedLanguage',
-              arg: context.tr(currentLang == 'am' ? 'languageAmharic' : 'languageEnglish'),
+              arg: context.tr(
+                  currentLang == 'am' ? 'languageAmharic' : 'languageEnglish'),
             )),
           ),
           const SizedBox(height: 20),
@@ -665,7 +671,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       ),
                       borderRadius: AppTheme.borderRadius,
                       color: isSelected
-                          ? (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.02))
+                          ? (isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.black.withValues(alpha: 0.02))
                           : Colors.transparent,
                     ),
                     child: Column(
@@ -673,12 +681,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       children: [
                         Text(
                           '$gradeLevel',
-                          style: AppTheme.getHeadingStyle(context: context, fontSize: 32),
+                          style: AppTheme.getHeadingStyle(
+                              context: context, fontSize: 32),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          context.tr('appName'), // Simple localized tag placeholder
-                          style: AppTheme.getBodyStyle(context: context, fontSize: 12),
+                          context.tr(
+                              'appName'), // Simple localized tag placeholder
+                          style: AppTheme.getBodyStyle(
+                              context: context, fontSize: 12),
                         ),
                       ],
                     ),
@@ -710,7 +721,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            context.tr('setupDashboard', arg: (_selectedGrade ?? '').toString()),
+            context.tr('setupDashboard',
+                arg: (_selectedGrade ?? '').toString()),
             style: AppTheme.getHeadingStyle(context: context, fontSize: 18),
             textAlign: TextAlign.center,
           ),
@@ -738,7 +750,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               minHeight: 8,
               backgroundColor: Theme.of(context).dividerColor,
               valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
+                Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black,
               ),
             ),
           ),
