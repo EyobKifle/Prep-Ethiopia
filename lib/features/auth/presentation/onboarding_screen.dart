@@ -93,52 +93,50 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
+  int get _visibleStep {
+    if (!_pageController.hasClients) return _currentStep;
+    return _pageController.page?.round() ?? _currentStep;
+  }
+
   void _nextStep() {
     if (!mounted) return;
-    debugPrint('_nextStep called! _isAnimating=$_isAnimating, _currentStep=$_currentStep');
-    if (_isAnimating || _currentStep >= 3) {
-      debugPrint('_nextStep BLOCKED by _isAnimating=$_isAnimating or _currentStep=$_currentStep');
-      return;
-    }
+    final visibleStep = _visibleStep;
+    debugPrint('_nextStep called! _isAnimating=$_isAnimating, visibleStep=$visibleStep');
+    if (_isAnimating || visibleStep >= 3) return;
 
-    // Enforce grade selection before entering the download step.
-    if (_currentStep == 2 && _selectedGrade == null) {
+    // Only require a grade when the visible page is the grade picker.
+    if (visibleStep == 2 && _selectedGrade == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.tr('pleaseSelectGrade'))),
       );
       return;
     }
 
+    final nextStep = visibleStep + 1;
     _isAnimating = true;
-    setState(() {
-      _currentStep++;
-    });
-
-    debugPrint('Calling _pageController.nextPage()... hasClients=${_pageController.hasClients}, positions=${_pageController.positions.length}, page=${_pageController.hasClients ? _pageController.page : null}');
-    _pageController.nextPage(
+    _pageController.animateToPage(
+      nextStep,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     ).then((_) {
-      debugPrint('_pageController.nextPage() completed! page=${_pageController.hasClients ? _pageController.page : null}');
+      if (!mounted) return;
       _isAnimating = false;
-      if (_currentStep == 3) {
+      if (nextStep == 3) {
         _startSimulatedDownload();
       }
     }).catchError((e) {
-      debugPrint('_pageController.nextPage() ERROR: $e');
+      debugPrint('_pageController.animateToPage() ERROR: $e');
       _isAnimating = false;
     });
   }
 
   void _previousStep() {
-    if (_isAnimating || _currentStep <= 0) return;
+    final visibleStep = _visibleStep;
+    if (_isAnimating || visibleStep <= 0) return;
 
     _isAnimating = true;
-    setState(() {
-      _currentStep--;
-    });
-    
-    _pageController.previousPage(
+    _pageController.animateToPage(
+      visibleStep - 1,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     ).then((_) {
@@ -235,6 +233,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authProvider, (previous, next) {
       if (widget.guestMode ||
+          _currentStep != 0 ||
+          _isAnimating ||
           previous?.profile != null ||
           next.profile == null ||
           !mounted) {
@@ -283,6 +283,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             Expanded(
               child: PageView(
                 controller: _pageController,
+                onPageChanged: (page) {
+                  if (_currentStep != page) {
+                    setState(() => _currentStep = page);
+                  }
+                },
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   _buildWelcomeStep(context),
