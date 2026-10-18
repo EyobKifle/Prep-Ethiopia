@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/auth_provider.dart';
@@ -35,14 +36,21 @@ import '../../features/parent/presentation/dashboard/parent_dashboard_screen.dar
 import '../../features/parent/presentation/dashboard/child_progress_screen.dart';
 import '../../features/parent/presentation/link/link_child_screen.dart';
 
-final routerProvider = Provider<GoRouter>((ref) {
-  // Watch auth state to reactively trigger router redirects on auth state change
-  final auth = ref.watch(authProvider);
+class _RouterRefreshNotifier extends ChangeNotifier {
+  void refresh() => notifyListeners();
+}
 
-  return GoRouter(
+final routerProvider = Provider<GoRouter>((ref) {
+  final refreshNotifier = _RouterRefreshNotifier();
+  ref.listen<AuthState>(authProvider, (_, __) => refreshNotifier.refresh());
+  ref.onDispose(refreshNotifier.dispose);
+
+  final router = GoRouter(
     initialLocation: '/onboarding',
+    refreshListenable: refreshNotifier,
     redirect: (context, state) {
-      // Prevent redirect loops / incorrect onboarding during async auth init
+      // Read current auth state without rebuilding the router or resetting navigation.
+      final auth = ref.read(authProvider);
       if (auth.isLoading) return null;
 
       final profile = auth.profile;
@@ -302,4 +310,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+  ref.onDispose(router.dispose);
+  return router;
 });

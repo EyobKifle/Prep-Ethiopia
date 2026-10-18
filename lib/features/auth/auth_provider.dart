@@ -158,6 +158,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<bool> signIn(String email, String password) async {
+    final guestUuid = state.profile?.uuid;
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final response = await _api.signIn(email: email, password: password);
@@ -169,6 +170,7 @@ if (response.accessToken != null && response.refreshToken != null && response.us
           await _client.auth.setSession(response.accessToken!);
         }
         await _loadProfile(userId, response.accessToken!);
+        await _mergeGuestProgressIfNeeded(guestUuid, userId);
       }
 
       state = state.copyWith(isLoading: false);
@@ -188,6 +190,7 @@ if (response.accessToken != null && response.refreshToken != null && response.us
     String preferredLang, {
     String role = 'student',
   }) async {
+    final guestUuid = state.profile?.uuid;
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final response = await _api.signUp(
@@ -214,6 +217,7 @@ if (response.accessToken != null && response.refreshToken != null && response.us
           await _client.auth.setSession(response.accessToken!);
         }
         await _loadProfile(userId, response.accessToken!);
+        await _mergeGuestProgressIfNeeded(guestUuid, userId);
       }
 
       state = state.copyWith(isLoading: false);
@@ -278,6 +282,18 @@ if (response.accessToken != null && response.refreshToken != null && response.us
       await _isar.profileLocals.put(profile);
     });
     state = state.copyWith(profile: profile);
+  }
+
+  Future<void> _mergeGuestProgressIfNeeded(
+    String? guestUuid,
+    String newUserUuid,
+  ) async {
+    if (guestUuid == null || !guestUuid.startsWith('guest_')) return;
+    try {
+      await mergeGuestProgress(guestUuid, newUserUuid);
+    } catch (e) {
+      debugPrint('Could not carry guest progress into the account: $e');
+    }
   }
 
   Future<void> mergeGuestProgress(String guestUuid, String newUserUuid) async {

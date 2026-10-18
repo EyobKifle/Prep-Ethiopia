@@ -34,45 +34,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _submit() async {
     if (_formKey.currentState!.validate()) {
-      final guestUuid = ref.read(authProvider).profile?.uuid;
       final success = await ref.read(authProvider.notifier).signIn(
             _emailController.text.trim(),
             _passwordController.text,
           );
       if (success && mounted) {
-        final authState = ref.read(authProvider);
-        final isGuestMerge = guestUuid != null && guestUuid.startsWith('guest_');
-
-        if (isGuestMerge && authState.user != null) {
-          final shouldMerge = await showDialog<bool>(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => AlertDialog(
-              icon: const Icon(Icons.merge_type_outlined, color: Colors.blue, size: 48),
-              title: Text(context.tr('mergeGuestProgress')),
-              content: Text(context.tr('mergeGuestProgressMessage')),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(context.tr('skip')),
-                ),
-                FilledButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text(context.tr('merge')),
-                ),
-              ],
-            ),
-          );
-
-          if (shouldMerge == true && mounted) {
-            await ref.read(authProvider.notifier).mergeGuestProgress(
-                  guestUuid,
-                  authState.user!.id,
-                );
-          }
-        }
-
-        if (!mounted) return;
         final profile = ref.read(authProvider).profile;
         final auth = ref.read(authProvider.notifier);
         if (profile?.role == 'parent') {

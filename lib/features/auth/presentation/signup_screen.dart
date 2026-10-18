@@ -41,7 +41,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     }
 
     if (_formKey.currentState!.validate()) {
-      final guestUuid = ref.read(authProvider).profile?.uuid;
       final success = await ref.read(authProvider.notifier).signUp(
             _emailController.text.trim(),
             _passwordController.text,
@@ -54,12 +53,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
       if (success) {
         final auth = ref.read(authProvider.notifier);
-        final signedInState = ref.read(authProvider);
-        if (guestUuid != null &&
-            guestUuid.startsWith('guest_') &&
-            signedInState.user != null) {
-          await auth.mergeGuestProgress(guestUuid, signedInState.user!.id);
-        }
         if (!mounted) return;
         if (widget.role == 'parent') {
           final profile = ref.read(authProvider).profile;
