@@ -54,14 +54,18 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final authState = ref.watch(authProvider);
     final theme = Theme.of(context);
 
-    return Scaffold(
+return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black54),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+        child: SingleScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Container(
             constraints: const BoxConstraints(maxWidth: 400),
             child: Form(
