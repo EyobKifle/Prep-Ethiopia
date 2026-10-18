@@ -105,7 +105,7 @@ return Scaffold(
         ),
       ),
 body: Center(
-        child: SingleScrollView(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Container(
             constraints: const BoxConstraints(maxWidth: 400),
