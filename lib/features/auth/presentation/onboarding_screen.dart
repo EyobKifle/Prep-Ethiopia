@@ -197,7 +197,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     if (auth.profile == null) {
       profile = ProfileLocal()
-        ..uuid = auth.user?.id ?? 'guest_' + DateTime.now().millisecondsSinceEpoch.toString()
+        ..uuid = auth.user?.id ?? 'guest_${DateTime.now().millisecondsSinceEpoch}'
         ..role = 'student'
         ..preferredLanguage = currentLang
         ..selectedGradeLevel = _selectedGrade
@@ -745,7 +745,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           const SizedBox(height: 16),
           if (_isSettingUp)
             Text(
-              ((_downloadProgress * 100).toInt()).toString() + '%',
+              '${(_downloadProgress * 100).toInt()}%',
               style: AppTheme.getHeadingStyle(context: context, fontSize: 16),
             ),
           if (_setupFailed)
