@@ -31,7 +31,7 @@ class StudentProfileScreen extends ConsumerWidget {
           ],
 
           // Settings Section
-          _buildSettingsSection(context, ref),
+          _buildSettingsSection(context, ref, profile),
           const SizedBox(height: 24),
 
           // Sign Out / Exit Guest Mode
@@ -121,7 +121,7 @@ class StudentProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSettingsSection(BuildContext context, WidgetRef ref) {
+  Widget _buildSettingsSection(BuildContext context, WidgetRef ref, dynamic profile) {
     final currentLocale = context.currentLocale;
 
     return Column(
@@ -150,6 +150,35 @@ class StudentProfileScreen extends ConsumerWidget {
                     DropdownMenuItem(value: 'en', child: Text('English')),
                     DropdownMenuItem(value: 'am', child: Text('አማርኛ')),
                   ],
+                ),
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.school_outlined),
+                title: const Text('Grade Level'),
+                subtitle: Text(
+                  profile?.selectedGradeLevel != null
+                      ? 'Grade ${profile!.selectedGradeLevel}'
+                      : 'Not Selected',
+                ),
+                trailing: DropdownButton<int>(
+                  value: profile?.selectedGradeLevel,
+                  hint: const Text('Grade'),
+                  underline: const SizedBox(),
+                  onChanged: (int? newGrade) async {
+                    if (newGrade != null && profile != null) {
+                      profile.selectedGradeLevel = newGrade;
+                      profile.updatedAt = DateTime.now();
+                      await ref.read(authProvider.notifier).updateProfile(profile);
+                    }
+                  },
+                  items: List.generate(12, (index) {
+                    final grade = index + 1;
+                    return DropdownMenuItem(
+                      value: grade,
+                      child: Text('Grade $grade'),
+                    );
+                  }),
                 ),
               ),
               const Divider(),

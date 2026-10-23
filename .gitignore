@@ -52,3 +52,7 @@ app.*.map.json
 **/build/
 /android/app/build/
 .kotlin/
+
+# Official textbooks
+/Official Text books/
+/Official Text books/**

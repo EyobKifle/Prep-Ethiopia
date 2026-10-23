@@ -28,9 +28,40 @@ class _OfflineLibraryScreenState extends ConsumerState<OfflineLibraryScreen> {
 
   Future<void> _loadData() async {
     final isar = ref.read(isarProvider);
+    final auth = ref.read(authProvider);
+    final gradeLevel = auth.profile?.selectedGradeLevel;
     
-    final textbooks = await isar.textbookLocals.filter().isDownloadedEqualTo(true).findAll();
-    final units = await isar.unitLocals.filter().isDownloadedEqualTo(true).findAll();
+    List<TextbookLocal> textbooks;
+    List<UnitLocal> units;
+
+    if (gradeLevel != null) {
+      final grade = await isar.gradeLocals.filter().levelEqualTo(gradeLevel).findFirst();
+      if (grade != null) {
+        final subjects = await isar.subjectLocals.filter().gradeUuidEqualTo(grade.uuid).findAll();
+        final subjectUuids = subjects.map((s) => s.uuid).toList();
+        if (subjectUuids.isNotEmpty) {
+          textbooks = await isar.textbookLocals
+              .filter()
+              .isDownloadedEqualTo(true)
+              .anyOf(subjectUuids, (q, String uuid) => q.subjectUuidEqualTo(uuid))
+              .findAll();
+          units = await isar.unitLocals
+              .filter()
+              .isDownloadedEqualTo(true)
+              .anyOf(subjectUuids, (q, String uuid) => q.subjectUuidEqualTo(uuid))
+              .findAll();
+        } else {
+          textbooks = [];
+          units = [];
+        }
+      } else {
+        textbooks = [];
+        units = [];
+      }
+    } else {
+      textbooks = await isar.textbookLocals.filter().isDownloadedEqualTo(true).findAll();
+      units = await isar.unitLocals.filter().isDownloadedEqualTo(true).findAll();
+    }
 
     if (mounted) {
       setState(() {
@@ -45,21 +76,35 @@ class _OfflineLibraryScreenState extends ConsumerState<OfflineLibraryScreen> {
     int totalBytes = 0;
     for (var t in _downloadedTextbooks) {
       if (t.localPdfPath != null) {
-        final file = File(t.localPdfPath!);
-        if (file.existsSync()) totalBytes += file.lengthSync();
+        if (t.localPdfPath!.startsWith('assets/')) {
+          totalBytes += (t.pdfSizeBytes ?? 20000000);
+        } else {
+          final file = File(t.localPdfPath!);
+          if (file.existsSync()) totalBytes += file.lengthSync();
+        }
       }
     }
     for (var u in _downloadedUnits) {
       if (u.localPdfPath != null) {
-        final file = File(u.localPdfPath!);
-        if (file.existsSync()) totalBytes += file.lengthSync();
+        if (u.localPdfPath!.startsWith('assets/')) {
+          totalBytes += 10000000;
+        } else {
+          final file = File(u.localPdfPath!);
+          if (file.existsSync()) totalBytes += file.lengthSync();
+        }
       }
     }
     return totalBytes / (1024 * 1024);
   }
 
-  String _getFileSizeString(String? path) {
+  String _getFileSizeString(String? path, [int? bytesSize]) {
     if (path == null) return '0.0 MB';
+    if (path.startsWith('assets/')) {
+      if (bytesSize != null) {
+        return '${(bytesSize / (1024 * 1024)).toStringAsFixed(1)} MB (Offline)';
+      }
+      return 'Offline';
+    }
     final file = File(path);
     if (!file.existsSync()) return '0.0 MB';
     final bytes = file.lengthSync();
@@ -67,6 +112,15 @@ class _OfflineLibraryScreenState extends ConsumerState<OfflineLibraryScreen> {
   }
 
   Future<void> _deleteTextbook(TextbookLocal textbook) async {
+    if (textbook.localPdfPath?.startsWith('assets/') ?? false) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Official curriculum textbooks are permanently available offline.')),
+        );
+      }
+      return;
+    }
+
     final confirmed = await _showDeleteConfirmation(textbook.title.getLocalized(context.currentLocale));
 
     if (confirmed == true) {
@@ -213,7 +267,13 @@ class _OfflineLibraryScreenState extends ConsumerState<OfflineLibraryScreen> {
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              ..._downloadedTextbooks.map((t) => _buildItemTile(t.title.getLocalized(context.currentLocale), t.localPdfPath, () => _deleteTextbook(t), () => context.push('/student/textbook/${t.uuid}'))),
+              ..._downloadedTextbooks.map((t) => _buildItemTile(
+                    t.title.getLocalized(context.currentLocale),
+                    t.localPdfPath,
+                    t.pdfSizeBytes,
+                    () => _deleteTextbook(t),
+                    () => context.push('/student/textbook/${t.uuid}'),
+                  )),
               const SizedBox(height: 24),
             ],
             if (_downloadedUnits.isNotEmpty) ...[
@@ -222,7 +282,13 @@ class _OfflineLibraryScreenState extends ConsumerState<OfflineLibraryScreen> {
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              ..._downloadedUnits.map((u) => _buildItemTile(u.title.getLocalized(context.currentLocale), u.localPdfPath, () => _deleteUnit(u), null)),
+              ..._downloadedUnits.map((u) => _buildItemTile(
+                    u.title.getLocalized(context.currentLocale),
+                    u.localPdfPath,
+                    null,
+                    () => _deleteUnit(u),
+                    null,
+                  )),
             ],
           ],
         ],
@@ -230,18 +296,24 @@ class _OfflineLibraryScreenState extends ConsumerState<OfflineLibraryScreen> {
     );
   }
 
-  Widget _buildItemTile(String title, String? path, VoidCallback onDelete, VoidCallback? onOpen) {
+  Widget _buildItemTile(String title, String? path, int? bytesSize, VoidCallback onDelete, VoidCallback? onOpen) {
+    final isAsset = path?.startsWith('assets/') ?? false;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         onTap: onOpen,
         leading: const Icon(Icons.picture_as_pdf, color: Colors.redAccent),
         title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-        subtitle: Text(_getFileSizeString(path), style: const TextStyle(fontSize: 12)),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline, color: Colors.grey),
-          onPressed: onDelete,
-        ),
+        subtitle: Text(_getFileSizeString(path, bytesSize), style: const TextStyle(fontSize: 12)),
+        trailing: isAsset
+            ? const Tooltip(
+                message: 'Permanently offline',
+                child: Icon(Icons.offline_pin, color: Colors.green),
+              )
+            : IconButton(
+                icon: const Icon(Icons.delete_outline, color: Colors.grey),
+                onPressed: onDelete,
+              ),
       ),
     );
   }

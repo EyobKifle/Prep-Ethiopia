@@ -419,10 +419,34 @@ class _TextbookViewerScreenState extends ConsumerState<TextbookViewerScreen> {
   }
 
   Widget _buildPdfViewer() {
-    final bool useLocal = _textbook!.isDownloaded && _textbook!.localPdfPath != null;
+    final path = _textbook!.localPdfPath;
+    final bool useLocal = _textbook!.isDownloaded && path != null && path.isNotEmpty;
     
     if (useLocal) {
-      final file = File(_textbook!.localPdfPath!);
+      if (path.startsWith('assets/')) {
+        return SfPdfViewer.asset(
+          path,
+          controller: _pdfViewerController,
+          scrollDirection: PdfScrollDirection.vertical,
+          pageLayoutMode: PdfPageLayoutMode.continuous,
+          onDocumentLoaded: (PdfDocumentLoadedDetails details) {
+            setState(() {
+              _totalPages = details.document.pages.count;
+              _currentPage = 1;
+            });
+          },
+          onPageChanged: (PdfPageChangedDetails details) {
+            setState(() {
+              _currentPage = details.newPageNumber;
+            });
+          },
+          onTextSelectionChanged: _onTextSelectionChanged,
+          onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
+            _showErrorSnackBar('Failed to load asset PDF: ${details.error}');
+          },
+        );
+      }
+      final file = File(path);
       if (file.existsSync()) {
         return SfPdfViewer.file(
           file,
@@ -446,6 +470,30 @@ class _TextbookViewerScreenState extends ConsumerState<TextbookViewerScreen> {
           },
         );
       }
+    }
+
+    if (_textbook!.pdfUrl.startsWith('assets/')) {
+      return SfPdfViewer.asset(
+        _textbook!.pdfUrl,
+        controller: _pdfViewerController,
+        scrollDirection: PdfScrollDirection.vertical,
+        pageLayoutMode: PdfPageLayoutMode.continuous,
+        onDocumentLoaded: (PdfDocumentLoadedDetails details) {
+          setState(() {
+            _totalPages = details.document.pages.count;
+            _currentPage = 1;
+          });
+        },
+        onPageChanged: (PdfPageChangedDetails details) {
+          setState(() {
+            _currentPage = details.newPageNumber;
+          });
+        },
+        onTextSelectionChanged: _onTextSelectionChanged,
+        onDocumentLoadFailed: (PdfDocumentLoadFailedDetails details) {
+          _showErrorSnackBar('Failed to load asset PDF: ${details.error}');
+        },
+      );
     }
 
     return SfPdfViewer.network(

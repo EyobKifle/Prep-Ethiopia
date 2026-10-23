@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:isar_community/isar.dart';
 import '../../../core/database/isar_models.dart';
 import '../../../core/database/isar_provider.dart';
+import '../../../core/database/seed_data.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../sync/sync_service.dart';
@@ -206,8 +207,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
     _pendingProfile = profile;
 
+    // Ensure curriculum data is seeded
+    await SeedData.seed(isar);
+
     if (!mounted) return;
-    setState(() => _downloadProgress = 0.3);
+    setState(() => _downloadProgress = 0.5);
 
     try {
       await ref
@@ -633,28 +637,47 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 12),
           Chip(
-            avatar: const Icon(Icons.translate, size: 18),
-            label: Text(context.tr(
-              'selectedLanguage',
-              arg: context.tr(
-                  currentLang == 'am' ? 'languageAmharic' : 'languageEnglish'),
-            )),
+            avatar: Icon(
+              _selectedGrade != null ? Icons.check_circle : Icons.school,
+              size: 18,
+              color: _selectedGrade != null ? Colors.green : null,
+            ),
+            label: Text(
+              _selectedGrade != null
+                  ? (currentLang == 'am'
+                      ? 'የተመረጠው ክፍል: ክፍል $_selectedGrade'
+                      : 'Selected: Grade $_selectedGrade')
+                  : (currentLang == 'am'
+                      ? 'እባክዎ ክፍል ይምረጡ'
+                      : 'Please choose your grade'),
+              style: AppTheme.getHeadingStyle(context: context, fontSize: 13),
+            ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Expanded(
             child: GridView.builder(
               shrinkWrap: true,
-              itemCount: 6, // Grades 7 to 12
+              itemCount: 12, // All Grades 1 to 12
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.3,
+                crossAxisCount: 3,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.15,
               ),
               itemBuilder: (context, index) {
-                final gradeLevel = index + 7;
+                final gradeLevel = index + 1;
                 final isSelected = _selectedGrade == gradeLevel;
                 final isDark = Theme.of(context).brightness == Brightness.dark;
+                final isGrade5 = gradeLevel == 5;
+
+                String stageLabel = '';
+                if (gradeLevel <= 6) {
+                  stageLabel = currentLang == 'am' ? 'የመጀመሪያ ደረጃ' : 'Primary';
+                } else if (gradeLevel <= 8) {
+                  stageLabel = currentLang == 'am' ? 'መካከለኛ ደረጃ' : 'Middle';
+                } else {
+                  stageLabel = currentLang == 'am' ? 'ሁለተኛ ደረጃ' : 'High School';
+                }
 
                 return InkWell(
                   onTap: () {
@@ -667,31 +690,79 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: isSelected
-                            ? (isDark ? Colors.white : Colors.black)
-                            : (isDark ? Colors.grey[800]! : Colors.grey[300]!),
-                        width: isSelected ? 2.0 : 1.0,
+                            ? (isGrade5 ? Colors.blue : (isDark ? Colors.white : Colors.black))
+                            : (isGrade5
+                                ? Colors.blue.withValues(alpha: 0.5)
+                                : (isDark ? Colors.grey[800]! : Colors.grey[300]!)),
+                        width: isSelected ? 2.5 : (isGrade5 ? 1.5 : 1.0),
                       ),
                       borderRadius: AppTheme.borderRadius,
                       color: isSelected
-                          ? (isDark
-                              ? Colors.white.withValues(alpha: 0.05)
-                              : Colors.black.withValues(alpha: 0.02))
-                          : Colors.transparent,
+                          ? (isGrade5
+                              ? Colors.blue.withValues(alpha: 0.12)
+                              : (isDark
+                                  ? Colors.white.withValues(alpha: 0.08)
+                                  : Colors.black.withValues(alpha: 0.04)))
+                          : (isGrade5
+                              ? Colors.blue.withValues(alpha: 0.03)
+                              : Colors.transparent),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Stack(
                       children: [
-                        Text(
-                          '$gradeLevel',
-                          style: AppTheme.getHeadingStyle(
-                              context: context, fontSize: 32),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          context.tr(
-                              'appName'), // Simple localized tag placeholder
-                          style: AppTheme.getBodyStyle(
-                              context: context, fontSize: 12),
+                        if (isGrade5)
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.blue,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'READY',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '$gradeLevel',
+                                style: AppTheme.getHeadingStyle(
+                                  context: context,
+                                  fontSize: 26,
+                                ).copyWith(
+                                  color: isSelected
+                                      ? (isGrade5 ? Colors.blue : null)
+                                      : null,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                currentLang == 'am'
+                                    ? 'ክፍል $gradeLevel'
+                                    : 'Grade $gradeLevel',
+                                style: AppTheme.getHeadingStyle(
+                                  context: context,
+                                  fontSize: 11,
+                                ),
+                              ),
+                              Text(
+                                stageLabel,
+                                style: AppTheme.getBodyStyle(
+                                  context: context,
+                                  fontSize: 9,
+                                ).copyWith(color: Colors.grey),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

@@ -25,10 +25,11 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
   StepLocal? _lastActiveStep;
   int _streakDays = 0;
   int _dueFlashcardsCount = 0;
+  List<TextbookLocal> _studentTextbooks = [];
 
   // Guest Specific
   List<GradeLocal> _allGrades = [];
-  int _selectedGradeLevel = 9;
+  int _selectedGradeLevel = 5;
   List<TextbookLocal> _guestTextbooks = [];
   String? _downloadingTextbookUuid;
   double _downloadProgress = 0;
@@ -53,7 +54,11 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
       if (auth.profile?.selectedGradeLevel != null) {
         _selectedGradeLevel = auth.profile!.selectedGradeLevel!;
       } else if (_allGrades.isNotEmpty) {
-        _selectedGradeLevel = _allGrades.first.level;
+        if (_allGrades.any((g) => g.level == 5)) {
+          _selectedGradeLevel = 5;
+        } else {
+          _selectedGradeLevel = _allGrades.first.level;
+        }
       }
       await _loadGuestTextbooks();
     } else {
@@ -71,6 +76,17 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
           // 2. Fetch subjects for the grade
           final subjects = await isar.subjectLocals.filter().gradeUuidEqualTo(grade.uuid).findAll();
           _subjects = subjects;
+
+          // Load textbooks for this grade
+          final subjectUuids = subjects.map((s) => s.uuid).toList();
+          if (subjectUuids.isNotEmpty) {
+            _studentTextbooks = await isar.textbookLocals
+                .filter()
+                .anyOf(subjectUuids, (q, String uuid) => q.subjectUuidEqualTo(uuid))
+                .findAll();
+          } else {
+            _studentTextbooks = [];
+          }
 
           // 3. Compute progress for each subject
           for (final subject in subjects) {
@@ -345,9 +361,28 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
                             style: AppTheme.getHeadingStyle(context: context, fontSize: 24),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            context.tr('welcomeSubtitle'),
-                            style: AppTheme.getBodyStyle(context: context),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                                ),
+                                child: Text(
+                                  'Grade ${authState.profile?.selectedGradeLevel ?? 5}',
+                                  style: AppTheme.getHeadingStyle(context: context, fontSize: 12).copyWith(
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                context.tr('welcomeSubtitle'),
+                                style: AppTheme.getBodyStyle(context: context),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -382,6 +417,25 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
                 ],
                 if (_dueFlashcardsCount > 0) ...[
                   _buildFlashcardAlert(context),
+                  const SizedBox(height: 24),
+                ],
+                if (_studentTextbooks.isNotEmpty) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        context.tr('officialTextbooks'),
+                        style: AppTheme.getHeadingStyle(context: context, fontSize: 18),
+                      ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.local_library_outlined, size: 16),
+                        label: Text(context.tr('navLibrary')),
+                        onPressed: () => context.push('/student/library'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ..._studentTextbooks.map((t) => _buildGuestTextbookCard(context, t, locale)),
                   const SizedBox(height: 24),
                 ],
                 Text(
@@ -520,9 +574,19 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
     final isDark = theme.brightness == Brightness.dark;
     final isDownloaded = textbook.isDownloaded;
     final isDownloading = _downloadingTextbookUuid == textbook.uuid;
+    final isAsset = textbook.localPdfPath?.startsWith('assets/') ?? false;
+
+    String subtitle = 'Available for download';
+    if (isDownloaded) {
+      if (isAsset) {
+        subtitle = 'Official Curriculum • Offline Ready';
+      } else {
+        subtitle = 'Saved Offline';
+      }
+    }
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       elevation: isDownloaded ? 1 : 0,
       color: isDownloaded 
           ? (isDark ? AppTheme.darkSurface : AppTheme.lightSurface)
@@ -530,24 +594,42 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
       child: ListTile(
         onTap: isDownloaded ? () {
           context.push('/student/textbook/${textbook.uuid}');
-        } : null,
-        contentPadding: const EdgeInsets.all(16),
-        leading: Icon(
-          Icons.book,
-          size: 40,
-          color: isDownloaded ? theme.primaryColor : Colors.grey,
+        } : () => _downloadTextbook(textbook),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          width: 44,
+          height: 52,
+          decoration: BoxDecoration(
+            color: isDownloaded
+                ? theme.primaryColor.withValues(alpha: 0.1)
+                : Colors.grey.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.menu_book_rounded,
+            size: 26,
+            color: isDownloaded ? theme.primaryColor : Colors.grey,
+          ),
         ),
         title: Text(
           textbook.title.getLocalized(locale),
-          style: AppTheme.getHeadingStyle(context: context, fontSize: 16).copyWith(
+          style: AppTheme.getHeadingStyle(context: context, fontSize: 15).copyWith(
             color: isDownloaded ? null : Colors.grey,
           ),
         ),
-        subtitle: Text(
-          isDownloaded ? 'Saved Offline' : 'Available for download',
-          style: AppTheme.getBodyStyle(context: context, fontSize: 12).copyWith(
-            color: isDownloaded ? Colors.green : Colors.grey,
-          ),
+        subtitle: Row(
+          children: [
+            if (isDownloaded) ...[
+              const Icon(Icons.check_circle, size: 14, color: Colors.green),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              subtitle,
+              style: AppTheme.getBodyStyle(context: context, fontSize: 12).copyWith(
+                color: isDownloaded ? Colors.green : Colors.grey,
+              ),
+            ),
+          ],
         ),
         trailing: isDownloading
             ? SizedBox(
@@ -558,13 +640,22 @@ class _StudentDashboardScreenState extends ConsumerState<StudentDashboardScreen>
                   strokeWidth: 3,
                 ),
               )
-            : IconButton(
-                icon: Icon(
-                  isDownloaded ? Icons.check_circle : Icons.download,
-                  color: isDownloaded ? Colors.green : theme.primaryColor,
-                ),
-                onPressed: isDownloaded ? null : () => _downloadTextbook(textbook),
-              ),
+            : (isDownloaded
+                ? ElevatedButton.icon(
+                    icon: const Icon(Icons.chrome_reader_mode_outlined, size: 16),
+                    label: const Text('Read'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    onPressed: () => context.push('/student/textbook/${textbook.uuid}'),
+                  )
+                : IconButton(
+                    icon: Icon(
+                      Icons.download,
+                      color: theme.primaryColor,
+                    ),
+                    onPressed: () => _downloadTextbook(textbook),
+                  )),
       ),
     );
   }

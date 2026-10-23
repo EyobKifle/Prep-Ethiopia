@@ -62,6 +62,7 @@ flutter:
   assets:
     - assets/subjects/
     - assets/icons/
+    - assets/textbooks/grade_5/
     - .env
 
 flutter_launcher_icons:

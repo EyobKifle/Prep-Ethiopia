@@ -153,6 +153,15 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> with 
   }
 
   Future<void> _deleteTextbook(TextbookLocal textbook) async {
+    if (textbook.localPdfPath?.startsWith('assets/') ?? false) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Official curriculum textbooks are permanently available offline.')),
+        );
+      }
+      return;
+    }
+
     final isar = ref.read(isarProvider);
     
     try {
@@ -282,16 +291,23 @@ class _SubjectDetailScreenState extends ConsumerState<SubjectDetailScreen> with 
                 ),
                 const SizedBox(width: 16),
                 if (textbook.isDownloaded) ...[
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    onPressed: () => _deleteTextbook(textbook),
-                    tooltip: context.tr('deleteTextbook'),
-                  ),
-                  ElevatedButton(
+                  if (textbook.localPdfPath?.startsWith('assets/') ?? false)
+                    const Padding(
+                      padding: EdgeInsets.only(right: 8.0),
+                      child: Icon(Icons.offline_pin, color: Colors.green, size: 22),
+                    )
+                  else
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      onPressed: () => _deleteTextbook(textbook),
+                      tooltip: context.tr('deleteTextbook'),
+                    ),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.menu_book, size: 18),
                     onPressed: () {
                       context.push('/student/textbook/${textbook.uuid}');
                     },
-                    child: Text(context.tr('readStep')),
+                    label: Text(context.tr('readStep')),
                   ),
                 ] else ...[
                   if (_downloadingTextbookUuid == textbook.uuid)

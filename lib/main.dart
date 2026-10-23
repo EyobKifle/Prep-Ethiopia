@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'core/database/isar_models.dart';
 import 'core/database/isar_provider.dart';
+import 'core/database/seed_data.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 
@@ -75,6 +76,7 @@ void main() async {
       ],
       directory: dir.path,
     );
+    await SeedData.seed(isar);
   } else {
     debugPrint('Running on web - Isar database skipped');
   }
