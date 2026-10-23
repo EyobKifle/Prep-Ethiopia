@@ -342,12 +342,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
                 child: KeyedSubtree(
                   key: ValueKey(_currentStep),
-                  child: switch (_currentStep) {
-                    0 => _buildWelcomeStep(context),
-                    1 => _buildLanguageStep(context),
-                    2 => _buildGradeStep(context),
-                    _ => _buildDownloadStep(context),
-                  },
+            child: switch (_currentStep) {
+              0 => _buildWelcomeStep(context),
+              1 => _buildLanguageStep(context),
+              2 => _buildGradeStep(context),
+              _ => _buildDownloadStep(context),
+            },
                 ),
               ),
             ),
