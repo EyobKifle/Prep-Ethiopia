@@ -56,3 +56,5 @@ app.*.map.json
 # Official textbooks
 /Official Text books/
 /Official Text books/**
+assets/textbooks/
+assets/textbooks/**
