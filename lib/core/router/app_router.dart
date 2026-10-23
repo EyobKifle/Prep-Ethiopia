@@ -47,49 +47,65 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   final router = GoRouter(
     initialLocation: '/onboarding',
-    refreshListenable: refreshNotifier,
-    redirect: (context, state) {
-      // Read current auth state without rebuilding the router or resetting navigation.
-      final auth = ref.read(authProvider);
-      if (auth.isLoading) return null;
+      refreshListenable: refreshNotifier,
+      redirect: (context, state) {
+        if (context.debugDoingBuild) return null;
+        // Read current auth state without rebuilding the router or resetting navigation.
+        final auth = ref.read(authProvider);
+        if (auth.isLoading) return null;
 
-      final profile = auth.profile;
-      final hasProfile = profile != null;
-      final isSignedIn = auth.user != null;
+        final profile = auth.profile;
+        final hasProfile = profile != null;
+        final isSignedIn = auth.user != null;
 
-      final isLoggingIn = state.matchedLocation == '/login' ||
-          state.matchedLocation == '/signup' ||
-          state.matchedLocation == '/onboarding';
+        final isLoggingIn = state.matchedLocation == '/login' ||
+            state.matchedLocation == '/signup' ||
+            state.matchedLocation == '/onboarding';
 
-      // 1. If not signed in and no profile, force onboarding (or allow only auth entry routes)
-      if (!isSignedIn && !hasProfile && !isLoggingIn) {
-        return '/onboarding';
-      }
+        // 1. If not signed in and no profile, force onboarding (or allow only auth entry routes)
+        if (!isSignedIn && !hasProfile && !isLoggingIn) {
+          return '/onboarding';
+        }
 
-      // 2. If already has profile, prevent access to login/signup/onboarding
-      //    BUT allow students (signed-in or guest) with incomplete profiles to stay.
-      if ((isSignedIn || hasProfile) && isLoggingIn) {
-        if (profile == null) return '/onboarding';
-
-        final loc = state.matchedLocation;
-        final isGuestAuthUpgrade = !isSignedIn &&
-            profile.uuid.startsWith('guest_') &&
-            (loc == '/login' || loc == '/signup');
-        if (isGuestAuthUpgrade) return null;
-
-        final role = profile.role;
-
-        // Allow students with incomplete profiles to continue onboarding
-        if (role == 'student') {
-          if (profile.selectedGradeLevel == null || profile.preferredLanguage.isEmpty) {
-            return null; // Stay on onboarding
+        // Allow guest students with complete profiles to access student routes
+        if (!isSignedIn && hasProfile && profile.role == 'student') {
+          final isComplete = profile.selectedGradeLevel != null && profile.preferredLanguage.isNotEmpty;
+          if (isComplete && !state.matchedLocation.startsWith('/onboarding') && 
+              !state.matchedLocation.startsWith('/login') && 
+              !state.matchedLocation.startsWith('/signup')) {
+            if (state.matchedLocation.startsWith('/student')) {
+              return null;
+            }
           }
         }
 
-        if (role == 'admin' || role == 'teacher') return '/admin';
-        if (role == 'parent') return '/parent';
-        return '/student';
-      }
+        // 2. If already has profile, prevent access to login/signup/onboarding
+        //    BUT allow students (signed-in or guest) with incomplete profiles to stay.
+        if ((isSignedIn || hasProfile) && isLoggingIn) {
+          if (profile == null) return '/onboarding';
+
+          final loc = state.matchedLocation;
+          final isGuestAuthUpgrade = !isSignedIn &&
+              profile.uuid.startsWith('guest_') &&
+              (loc == '/login' || loc == '/signup');
+          if (isGuestAuthUpgrade) return null;
+
+          final role = profile.role;
+
+          // Allow students with incomplete profiles to continue onboarding
+          if (role == 'student') {
+            if (profile.selectedGradeLevel == null || profile.preferredLanguage.isEmpty) {
+              return null; // Stay on onboarding
+            } else {
+              // Student with complete profile - redirect to student dashboard
+              return '/student';
+            }
+          }
+
+          if (role == 'admin' || role == 'teacher') return '/admin';
+          if (role == 'parent') return '/parent';
+          return '/student';
+        }
 
       // 3. Role-based route guard redirects (only when profile is available)
       if (hasProfile) {
@@ -111,11 +127,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         }
 
         // Resume incomplete onboarding for signed-in users
-        if (!isSignedIn && loc != '/onboarding') {
-          return '/onboarding';
+        if (isSignedIn && loc != '/onboarding') {
+          if (role == 'student') {
+            if (profile.selectedGradeLevel == null || profile.preferredLanguage.isEmpty) {
+              return '/onboarding';
+            }
+          }
         }
-        if (isSignedIn && role == 'student') {
-          if (profile.selectedGradeLevel == null || profile.preferredLanguage.isEmpty) {
+        // For guest users with complete profiles, allow access to student routes
+        if (!isSignedIn && loc != '/onboarding') {
+          if (role == 'student') {
+            if (profile.selectedGradeLevel == null || profile.preferredLanguage.isEmpty) {
+              return '/onboarding';
+            }
+          } else if (role == 'admin' || role == 'teacher' || role == 'parent') {
             return '/onboarding';
           }
         }

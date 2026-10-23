@@ -110,7 +110,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         await ref.read(authProvider.notifier).updateProfile(profile);
       }
     }
-    if (mounted) context.go('/student');
+    if (mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.go('/student');
+      });
+    }
   }
 
   void _nextStep() {
@@ -224,7 +228,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         _downloadProgress = 1.0;
         _isSettingUp = false;
       });
-      await _continueToDashboard();
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        await _continueToDashboard();
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -789,3 +796,4 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 }
+
