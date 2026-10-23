@@ -43,19 +43,13 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    debugPrint('--- Now tapping student InkWell ---');
     final inkWells = find.byType(InkWell);
     await tester.tap(inkWells.first);
 
-    debugPrint('--- Pump 1 ---');
     await tester.pump();
-    debugPrint('--- Pump 2 (100ms) ---');
     await tester.pump(const Duration(milliseconds: 100));
-    debugPrint('--- Pump 3 (100ms) ---');
     await tester.pump(const Duration(milliseconds: 100));
-    debugPrint('--- Pump 4 (100ms) ---');
     await tester.pump(const Duration(milliseconds: 100));
-    debugPrint('--- Settle ---');
     await tester.pumpAndSettle();
   });
 }

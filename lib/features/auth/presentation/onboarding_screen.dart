@@ -32,7 +32,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
-    debugPrint('_OnboardingScreenState.initState! hashCode=$hashCode');
     if (widget.guestMode) {
       _currentStep = 1;
     } else {
@@ -61,7 +60,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   void dispose() {
-    debugPrint('_OnboardingScreenState.dispose! hashCode=$hashCode');
     super.dispose();
   }
 
@@ -117,8 +115,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _nextStep() {
     if (!mounted) return;
-    debugPrint(
-        '_nextStep called! _isAnimating=$_isAnimating, step=$_currentStep');
     if (_isAnimating || _currentStep >= 3) return;
 
     // Only require a grade when the visible page is the grade picker.
@@ -230,7 +226,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       });
       await _continueToDashboard();
     } catch (e) {
-      debugPrint('Initial sync failed: $e');
       if (!mounted) return;
       setState(() {
         _downloadProgress = 1.0;
@@ -728,9 +723,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            _setupFailed
-                ? context.tr('offlineSetupFailed')
-                : context.tr('setupDashboardSubtitle'),
+            context.tr('setupDashboardSubtitle'),
             style: AppTheme.getBodyStyle(context: context),
             textAlign: TextAlign.center,
           ),
@@ -740,6 +733,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               context.tr('guestLocalSaveNotice'),
               style: AppTheme.getBodyStyle(context: context),
               textAlign: TextAlign.center,
+            ),
+          ],
+          if (_setupFailed) ...[
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.1),
+                borderRadius: AppTheme.borderRadius,
+                border: Border.all(color: Colors.orange),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      context.tr('offlineSetupFailed'),
+                      style: AppTheme.getBodyStyle(context: context),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
           const SizedBox(height: 32),
